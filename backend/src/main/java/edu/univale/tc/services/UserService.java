@@ -6,8 +6,14 @@ import edu.univale.tc.dto.response.UserResponseDto;
 import edu.univale.tc.exceptions.InvalidCredentialsException;
 import edu.univale.tc.exceptions.ResourceNotFoundException;
 import edu.univale.tc.repositories.UserRepository;
+import edu.univale.tc.services.security.JwtService;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.BadCredentialsException;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.Collections;
@@ -18,6 +24,14 @@ public class UserService {
 
     @Autowired
     private UserRepository userRepository;
+
+    @Autowired
+    private AuthenticationManager authenticationManager;
+
+    @Autowired
+    private JwtService jwtService;
+
+    private final BCryptPasswordEncoder encoderPassword = new BCryptPasswordEncoder(12);
 
     // GET methods:
 
@@ -39,6 +53,7 @@ public class UserService {
 
         User newUser = new User();
         BeanUtils.copyProperties(userRequestDto, newUser);
+        newUser.setPassword(encoderPassword.encode(newUser.getPassword()));
         userRepository.save(newUser);
         return new UserResponseDto(newUser);
     }
@@ -52,6 +67,7 @@ public class UserService {
 
         User updatedUser = userRepository.findById(id).orElseThrow(ResourceNotFoundException::new);
         BeanUtils.copyProperties(userRequestDto, updatedUser);
+        updatedUser.setPassword(encoderPassword.encode(updatedUser.getPassword()));
         userRepository.save(updatedUser);
         return new UserResponseDto(updatedUser);
     }
@@ -74,6 +90,12 @@ public class UserService {
     }
 
     public String verifyAuthentication(UserRequestDto userRequestDto) {
-        return null;
+        Authentication authentication = authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(userRequestDto.getEmail(), userRequestDto.getPassword()));
+
+        if (!authentication.isAuthenticated()) {
+            throw new InvalidCredentialsException("Authenticação inválida");
+        }
+
+        return jwtService.generateToken(userRequestDto.getEmail());
     }
 }

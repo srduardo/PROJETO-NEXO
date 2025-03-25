@@ -39,7 +39,7 @@ public class UserService {
 
         User newUser = new User();
         BeanUtils.copyProperties(userRequestDto, newUser);
-        userRepository.saveAndFlush(newUser);
+        userRepository.save(newUser);
         return new UserResponseDto(newUser);
     }
 
@@ -52,7 +52,7 @@ public class UserService {
 
         User updatedUser = userRepository.findById(id).orElseThrow(ResourceNotFoundException::new);
         BeanUtils.copyProperties(userRequestDto, updatedUser);
-        userRepository.saveAndFlush(updatedUser);
+        userRepository.save(updatedUser);
         return new UserResponseDto(updatedUser);
     }
 
@@ -73,4 +73,7 @@ public class UserService {
         return Collections.binarySearch(storedEmails, userEmail) > -1;
     }
 
+    public String verifyAuthentication(UserRequestDto userRequestDto) {
+        return null;
+    }
 }

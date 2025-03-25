@@ -28,6 +28,11 @@ public class UserController {
     }
 
     @PostMapping("/login")
+    public ResponseEntity<String> loginUser(@Valid @RequestBody UserRequestDto userRequestDto) {
+        return ResponseEntity.ok(userService.verifyAuthentication(userRequestDto));
+    }
+
+    @PostMapping("/register")
     public ResponseEntity<UserResponseDto> registerUser(@Valid @RequestBody UserRequestDto userRequestDto) {
         return ResponseEntity.ok(userService.createUser(userRequestDto));
     }

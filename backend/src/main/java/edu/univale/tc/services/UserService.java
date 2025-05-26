@@ -1,16 +1,19 @@
 package edu.univale.tc.services;
 
+import edu.univale.tc.domain.Collaboration;
 import edu.univale.tc.domain.User;
 import edu.univale.tc.dto.request.UserRequestDto;
 import edu.univale.tc.dto.response.UserResponseDto;
 import edu.univale.tc.exceptions.InvalidCredentialsException;
 import edu.univale.tc.exceptions.ResourceNotFoundException;
+import edu.univale.tc.repositories.CollaborationRepository;
+import edu.univale.tc.repositories.SquadRepository;
+import edu.univale.tc.repositories.TaskRepository;
 import edu.univale.tc.repositories.UserRepository;
 import edu.univale.tc.services.security.JwtService;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
@@ -31,25 +34,37 @@ public class UserService {
     @Autowired
     private JwtService jwtService;
 
+    @Autowired
+    private CollaborationRepository collaborationRepository;
+
+    @Autowired
+    private TaskRepository taskRepository;
+
+    @Autowired
+    private SquadRepository squadRepository;
+
     private final BCryptPasswordEncoder encoderPassword = new BCryptPasswordEncoder(12);
 
-    // GET methods:
-
-    public List<UserResponseDto> findAllUsers() {
-        return userRepository.findAll().stream().map(user -> new UserResponseDto(user.getUsername(), user.getEmail())).toList();
+    public List<UserResponseDto> findAllUsersResponse() {
+        return userRepository.findAll().stream().map(UserResponseDto::new).toList();
     }
 
-    public UserResponseDto findUserById(Integer id) throws ResourceNotFoundException {
+    public User findUserById(long id) {
+        return userRepository.findById(id).orElseThrow(ResourceNotFoundException::new);
+    }
+
+    public UserResponseDto findUserResponseById(long id) throws ResourceNotFoundException {
         User user = userRepository.findById(id).orElseThrow(ResourceNotFoundException::new);
         return new UserResponseDto(user);
     }
 
-    // POST method:
+    public User findUserByEmail(String email) {
+        return userRepository.findUserByEmail(email).orElseThrow(ResourceNotFoundException::new);
+    }
 
     public UserResponseDto createUser(UserRequestDto userRequestDto) throws InvalidCredentialsException {
-        if (userRequestDto == null || verifyEmail(userRequestDto.getEmail())) {
+        if (userRequestDto == null || verifyEmail(userRequestDto.getEmail()))
             throw new InvalidCredentialsException();
-        }
 
         User newUser = new User();
         BeanUtils.copyProperties(userRequestDto, newUser);
@@ -58,30 +73,31 @@ public class UserService {
         return new UserResponseDto(newUser);
     }
 
-    // PUT method:
-
-    public UserResponseDto updateUser(Integer id, UserRequestDto userRequestDto) throws RuntimeException {
-        if (userRequestDto == null || verifyEmail(userRequestDto.getEmail())) {
-            throw new InvalidCredentialsException();
-        }
-
+    public UserResponseDto updateUsername(long id, String newUsername) throws RuntimeException {
         User updatedUser = userRepository.findById(id).orElseThrow(ResourceNotFoundException::new);
-        BeanUtils.copyProperties(userRequestDto, updatedUser);
-        updatedUser.setPassword(encoderPassword.encode(updatedUser.getPassword()));
+
+        if (newUsername == null)
+            throw new IllegalArgumentException("Erro ao atualizar usuário!");
+
+        updatedUser.setUsername(newUsername);
         userRepository.save(updatedUser);
         return new UserResponseDto(updatedUser);
     }
 
-    // DELETE method:
+    public void deleteUser(long id) {
+        if (!userRepository.existsById(id))
+            throw new ResourceNotFoundException("Usuário não encontrado!");
 
-    public UserResponseDto deleteUser(Integer id) {
-        User user = userRepository.findById(id).orElseThrow(ResourceNotFoundException::new);
-        UserResponseDto userResponseDto = new UserResponseDto(user);
+        User user = findUserById(id);
+
+        collaborationRepository.deleteAllById(
+                user.getCollaboration().stream()
+                        .map(Collaboration::getId)
+                        .toList());
+        taskRepository.deleteAll(user.getTasks());
+        squadRepository.deleteAll(user.getOwnedSquads());
         userRepository.deleteById(id);
-        return userResponseDto;
     }
-
-    // Verify method:
 
     private boolean verifyEmail(String userEmail) {
         List<String> storedEmails = userRepository.findAllUserEmails();
@@ -90,11 +106,11 @@ public class UserService {
     }
 
     public String verifyAuthentication(UserRequestDto userRequestDto) {
-        Authentication authentication = authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(userRequestDto.getEmail(), userRequestDto.getPassword()));
+        Authentication authentication = authenticationManager.authenticate(
+                new UsernamePasswordAuthenticationToken(userRequestDto.getEmail(), userRequestDto.getPassword()));
 
-        if (!authentication.isAuthenticated()) {
+        if (!authentication.isAuthenticated())
             throw new InvalidCredentialsException("Authenticação inválida");
-        }
 
         return jwtService.generateToken(userRequestDto.getEmail());
     }

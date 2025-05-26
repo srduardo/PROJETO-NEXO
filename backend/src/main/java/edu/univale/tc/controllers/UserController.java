@@ -19,12 +19,12 @@ public class UserController {
 
     @GetMapping
     public ResponseEntity<List<UserResponseDto>> getAllUsers() {
-        return ResponseEntity.ok(userService.findAllUsers());
+        return ResponseEntity.ok(userService.findAllUsersResponse());
     }
 
-    @GetMapping("{id}")
+    @GetMapping("/{id}")
     public ResponseEntity<UserResponseDto> getUser(@PathVariable Integer id) {
-        return ResponseEntity.ok(userService.findUserById(id));
+        return ResponseEntity.ok(userService.findUserResponseById(id));
     }
 
     @PostMapping("/login")
@@ -34,17 +34,17 @@ public class UserController {
 
     @PostMapping("/register")
     public ResponseEntity<UserResponseDto> registerUser(@Valid @RequestBody UserRequestDto userRequestDto) {
-        return ResponseEntity.ok(userService.createUser(userRequestDto));
+        return ResponseEntity.status(201).body(userService.createUser(userRequestDto));
     }
 
-    @PutMapping("{id}")
-    public ResponseEntity<UserResponseDto> updateUser(@PathVariable Integer id, @Valid @RequestBody UserRequestDto userRequestDto) {
-        return ResponseEntity.ok(userService.updateUser(id, userRequestDto));
+    @PutMapping("/{id}/update")
+    public ResponseEntity<UserResponseDto> updateUsername(@PathVariable Integer id, @Valid @RequestBody String userRequestDto) {
+        return ResponseEntity.ok(userService.updateUsername(id, userRequestDto));
     }
 
-    @DeleteMapping("{id}")
+    @DeleteMapping("/{id}/delete")
     public ResponseEntity<UserResponseDto> deleteUser(@PathVariable Integer id) {
-        UserResponseDto userResponseDto = userService.deleteUser(id);
-        return ResponseEntity.ok(userResponseDto);
+        userService.deleteUser(id);
+        return ResponseEntity.status(204).build();
     }
 }

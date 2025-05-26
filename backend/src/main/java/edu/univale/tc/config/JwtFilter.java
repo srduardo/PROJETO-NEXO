@@ -1,7 +1,6 @@
 package edu.univale.tc.config;
 
 import edu.univale.tc.services.security.JwtService;
-import edu.univale.tc.services.security.MainUserDetails;
 import edu.univale.tc.services.security.MainUserDetailsService;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;

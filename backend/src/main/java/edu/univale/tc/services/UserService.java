@@ -3,6 +3,7 @@ package edu.univale.tc.services;
 import edu.univale.tc.domain.Collaboration;
 import edu.univale.tc.domain.User;
 import edu.univale.tc.dto.request.UserRequestDto;
+import edu.univale.tc.dto.response.JwtResponseDto;
 import edu.univale.tc.dto.response.UserResponseDto;
 import edu.univale.tc.exceptions.InvalidCredentialsException;
 import edu.univale.tc.exceptions.ResourceNotFoundException;
@@ -73,7 +74,7 @@ public class UserService {
         return new UserResponseDto(newUser);
     }
 
-    public UserResponseDto updateUsername(long id, String newUsername) throws RuntimeException {
+    public String updateUsername(long id, String newUsername) throws RuntimeException {
         User updatedUser = userRepository.findById(id).orElseThrow(ResourceNotFoundException::new);
 
         if (newUsername == null)
@@ -81,7 +82,7 @@ public class UserService {
 
         updatedUser.setUsername(newUsername);
         userRepository.save(updatedUser);
-        return new UserResponseDto(updatedUser);
+        return updatedUser.getUsername();
     }
 
     public void deleteUser(long id) {
@@ -105,13 +106,14 @@ public class UserService {
         return Collections.binarySearch(storedEmails, userEmail) > -1;
     }
 
-    public String verifyAuthentication(UserRequestDto userRequestDto) {
+    public JwtResponseDto verifyAuthentication(UserRequestDto userRequestDto) {
         Authentication authentication = authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(userRequestDto.getEmail(), userRequestDto.getPassword()));
 
         if (!authentication.isAuthenticated())
             throw new InvalidCredentialsException("Authenticação inválida");
+        User user = findUserByEmail(userRequestDto.getEmail());
 
-        return jwtService.generateToken(userRequestDto.getEmail());
+        return new JwtResponseDto(user.getId(), user.getUsername(), user.getEmail(), jwtService.generateToken(user.getEmail()));
     }
 }

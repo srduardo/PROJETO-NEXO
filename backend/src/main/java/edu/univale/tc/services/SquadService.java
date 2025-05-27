@@ -7,6 +7,7 @@ import org.springframework.stereotype.Service;
 import edu.univale.tc.domain.Squad;
 import edu.univale.tc.domain.User;
 import edu.univale.tc.dto.request.SquadRequestDto;
+import edu.univale.tc.dto.response.CollaborationResponseDto;
 import edu.univale.tc.dto.response.SquadResponseDto;
 import edu.univale.tc.exceptions.ResourceNotFoundException;
 import edu.univale.tc.repositories.SquadRepository;
@@ -35,7 +36,7 @@ public class SquadService {
         return new SquadResponseDto(squadRepository.findById(id).orElseThrow(ResourceNotFoundException::new));
     }
 
-    public SquadResponseDto createNewSquad(SquadRequestDto squadRequestDto, long userId) {
+    public CollaborationResponseDto createNewSquad(SquadRequestDto squadRequestDto, long userId) {
         User user = userService.findUserById(userId);
 
         if (squadRequestDto == null) throw new IllegalArgumentException("Erro ao criar nova equipe!");
@@ -44,8 +45,8 @@ public class SquadService {
         newSquad = squadRepository.save(newSquad);
 
         collaborationService.createNewCollaboration(userId, newSquad.getId(), "OWNER");
-        
-        return new SquadResponseDto(newSquad);
+
+        return new CollaborationResponseDto(newSquad.getId(), newSquad.getName(), newSquad.getOwnerId().getUsername(), 1);
     }
 
     public SquadResponseDto updateSquadName(long id, String name) {        
@@ -62,8 +63,11 @@ public class SquadService {
     public void deleteSquadBySquadIdAndUserId(long squadId, long userId) {
         if (!squadRepository.existsById(squadId)) throw new ResourceNotFoundException("Equipe não encontrada!");
 
+
+
         collaborationService.deleteCollaboration(squadId, userId);
         squadRepository.deleteById(squadId);
     }
+
 
 }

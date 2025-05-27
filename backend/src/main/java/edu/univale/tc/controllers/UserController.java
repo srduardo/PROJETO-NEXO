@@ -1,6 +1,7 @@
 package edu.univale.tc.controllers;
 
 import edu.univale.tc.dto.request.UserRequestDto;
+import edu.univale.tc.dto.response.JwtResponseDto;
 import edu.univale.tc.dto.response.UserResponseDto;
 import edu.univale.tc.services.UserService;
 import jakarta.validation.Valid;
@@ -12,6 +13,7 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/users")
+@CrossOrigin(origins = "http://localhost:5173")
 public class UserController {
 
     @Autowired
@@ -28,7 +30,7 @@ public class UserController {
     }
 
     @PostMapping("/login")
-    public ResponseEntity<String> loginUser(@Valid @RequestBody UserRequestDto userRequestDto) {
+    public ResponseEntity<JwtResponseDto> loginUser(@Valid @RequestBody UserRequestDto userRequestDto) {
         return ResponseEntity.ok(userService.verifyAuthentication(userRequestDto));
     }
 
@@ -38,7 +40,8 @@ public class UserController {
     }
 
     @PutMapping("/{id}/update")
-    public ResponseEntity<UserResponseDto> updateUsername(@PathVariable Integer id, @Valid @RequestBody String userRequestDto) {
+    public ResponseEntity<String> updateUsername(@PathVariable Integer id,
+            @Valid @RequestBody String userRequestDto) {
         return ResponseEntity.ok(userService.updateUsername(id, userRequestDto));
     }
 

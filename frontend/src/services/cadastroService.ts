@@ -1,18 +1,8 @@
 import api from './api';
+import type {CadastroRequest} from '../types/CadastroRequest';
+import type {CadastroResponse} from '../types/CadastroResponse';
 
-interface CadastroRequest {
-    username: string;
-    email: string;
-    password: string;
-}
-
-interface CadastroResponse {
-  id: number;
-  username: string;
-  email: string;
-}
-
-export const cadastro = async (dados: CadastroRequest): Promise<CadastroResponse> => {
+export const cadastrar = async (dados: CadastroRequest): Promise<CadastroResponse | string> => {
   return api<CadastroResponse>('/users/register', {
     method: 'POST',
     body: dados,

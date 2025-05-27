@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import type {ButtonProps} from './ButtonProps';
 
-export default function Button({width, height, color, children, onClick}: ButtonProps) {
+export default function Button({width, height, color='#EBC351', mouseDownColor='#AD903E', children, onClick, colorText = 'white', margin}: ButtonProps) {
   const [hover, setHover] = useState(false);
   
     const style = {
@@ -9,13 +9,13 @@ export default function Button({width, height, color, children, onClick}: Button
         height: height, 
         fontSize: 20, 
         fontWeight: 'bold', 
-        color: 'white', 
+        color: colorText, 
         borderRadius: 8, 
         paddingInlineStart: 10, 
         paddingInlineEnd: 10, 
         borderStyle: 'none', 
-        margin: 15, 
-        backgroundColor: hover ? "#AD903E" : color,
+        margin: margin, 
+        backgroundColor: hover ? mouseDownColor : color,
         cursor: 'pointer'   
     }
 

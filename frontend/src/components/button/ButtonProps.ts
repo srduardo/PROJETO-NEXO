@@ -1,9 +1,12 @@
 import type { ReactNode } from "react"
 
 export type ButtonProps = {
-    width: number,
+    width: number | string,
     height: number,
-    color: string,
+    color?: string,
+    mouseDownColor?: string,
     onClick: () => void,
-    children: ReactNode
+    children: ReactNode,
+    colorText?: string
+    margin: string | number
 }

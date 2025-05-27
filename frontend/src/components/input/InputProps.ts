@@ -1,6 +1,7 @@
 export type InputProps = {
-    width: number,
-    placeholder: string,
-    value: string
+    width: number | string,
+    placeholder: string | undefined,
+    value: string | undefined,
+    margin: number | string,
     onChange?: (e: React.ChangeEvent<HTMLInputElement>) => void;
 }

@@ -7,7 +7,6 @@ import org.springframework.web.bind.annotation.RestController;
 
 import edu.univale.tc.dto.request.AcceptRequestDto;
 import edu.univale.tc.dto.request.InviteRequestDto;
-import edu.univale.tc.dto.response.InviteResponseDto;
 import edu.univale.tc.services.InviteService;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -28,8 +27,9 @@ public class InviteController {
     }
 
     @PostMapping("/accept")
-    public ResponseEntity<InviteResponseDto> accept(@RequestBody AcceptRequestDto acceptRequestDto, @RequestHeader(name = "Authorization") String auth) {
-        return ResponseEntity.ok(inviteService.acceptInvite(acceptRequestDto, auth));
+    public ResponseEntity<Object> accept(@RequestBody AcceptRequestDto acceptRequestDto, @RequestHeader(name = "Authorization") String auth) {
+        inviteService.acceptInvite(acceptRequestDto, auth);
+        return ResponseEntity.status(204).build();
     }
     
     

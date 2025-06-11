@@ -38,20 +38,23 @@ public class TaskService {
         return taskRepository.findAll().stream().map(TaskResponseDto::new).toList();
     }
 
+        public List<TaskResponseDto> findAllTasksResponseByUserIdAndSquadId(long squadId, long userId) {
+        return taskRepository.findAll().stream().filter(t -> t.getOwnerId().getId() == userId && t.getSquadId().getId() == squadId).map(TaskResponseDto::new).toList();
+    }
+
     public TaskResponseDto createNewTask(TaskRequestDto taskRequestDto, long squadId, long userId) {
         if (taskRequestDto == null) throw new IllegalArgumentException("Erro ao criar tarefa!");
 
         Task task = new Task();
         task.setTitle(taskRequestDto.getTitle());
         task.setDescription(taskRequestDto.getDescription());
+        task.setStatus(taskRequestDto.getStatus());
 
         User user = userService.findUserById(userId);
         task.setOwnerId(user);
 
         Squad squad = squadService.findSquadById(squadId);
         task.setSquadId(squad);
-
-        task.setStatus("PENDENTE");
 
         taskRepository.save(task);
         return new TaskResponseDto(task);
@@ -71,16 +74,6 @@ public class TaskService {
         if (!taskRepository.existsById(taskId)) throw new ResourceNotFoundException();
 
         taskRepository.deleteById(taskId);
-    }
-
-    public TaskResponseDto updateStatus(String newStatus, long taskId) {
-        if (newStatus == null && !taskRepository.existsById(taskId)) throw new IllegalArgumentException("Erro ao atualizar tarefa!");
-
-        Task task = findTaskById(taskId);
-        task.setStatus(newStatus);
-        
-        taskRepository.save(task);
-        return new TaskResponseDto(task);
     }
 
 }

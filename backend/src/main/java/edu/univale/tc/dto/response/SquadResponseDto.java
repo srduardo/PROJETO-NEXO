@@ -1,26 +1,21 @@
 package edu.univale.tc.dto.response;
 
 import edu.univale.tc.domain.Squad;
-import edu.univale.tc.domain.User;
-import jakarta.validation.constraints.Min;
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.Size;
+import lombok.AllArgsConstructor;
 import lombok.Data;
 
 @Data
+@AllArgsConstructor
 public class SquadResponseDto {
-    @Min(1)
-    private long id;
-    @NotBlank
-    @Size(max = 250)
-    private String name;
-    @NotNull
-    private User owner;
+    private long squadId;
+    private String squadName;
+    private String ownerName;
+    private int membersAmount;
 
     public SquadResponseDto(Squad squad) {
-        this.id = squad.getId();
-        this.name = squad.getName();
-        this.owner = squad.getOwnerId();
+        this.squadId = squad.getId();
+        this.squadName = squad.getName();
+        this.ownerName = squad.getOwnerId().getUsername();
+        this.membersAmount = squad.getCollaboration().size();
     }
 }

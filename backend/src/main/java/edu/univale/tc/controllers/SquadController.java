@@ -8,12 +8,9 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import edu.univale.tc.dto.request.SquadRequestDto;
-import edu.univale.tc.dto.response.CollaborationResponseDto;
 import edu.univale.tc.dto.response.SquadResponseDto;
-import edu.univale.tc.services.CollaborationService;
 import edu.univale.tc.services.SquadService;
 
-import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -23,14 +20,10 @@ import org.springframework.web.bind.annotation.PathVariable;
 
 @RestController
 @RequestMapping("/api/squads")
-@CrossOrigin(origins = "http://localhost:5173")
 public class SquadController {
 
     @Autowired
     private SquadService squadService;
-
-    @Autowired
-    private CollaborationService collaborationService;
 
     @GetMapping
     public ResponseEntity<List<SquadResponseDto>> getAllSquads() {
@@ -42,19 +35,14 @@ public class SquadController {
         return ResponseEntity.ok(squadService.findSquadResponseById(squadId));
     }
 
-    @GetMapping("/user/{userId}")
-    public ResponseEntity<List<CollaborationResponseDto>> getAllCollaborationsByUserId(@PathVariable long userId) {
-        return ResponseEntity.ok(collaborationService.findAllByUserId(userId));
-    }
-
     @PostMapping("/{userId}/create")
-    public ResponseEntity<CollaborationResponseDto> createSquad(@RequestBody SquadRequestDto squadRequestDto, @PathVariable long userId) {
+    public ResponseEntity<SquadResponseDto> createSquad(@RequestBody SquadRequestDto squadRequestDto, @PathVariable long userId) {
         return ResponseEntity.status(201).body(squadService.createNewSquad(squadRequestDto, userId));
     }
 
     @PutMapping("/{squadId}/update")
-    public ResponseEntity<SquadResponseDto> putSquadName(@RequestBody String name, @PathVariable long squadId) {
-        return ResponseEntity.ok(squadService.updateSquadName(squadId, name));
+    public ResponseEntity<SquadResponseDto> putSquadName(@RequestBody SquadRequestDto squadRequestDto, @PathVariable long squadId) {
+        return ResponseEntity.ok(squadService.updateSquadName(squadId, squadRequestDto));
     }
 
     @DeleteMapping("/{squadId}/{userId}/delete")

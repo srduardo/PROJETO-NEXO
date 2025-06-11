@@ -17,9 +17,13 @@ public class TaskRequestDto {
     @NotBlank
     @Size(max = 300)
     private String description;
+    @NotBlank
+    @Size(max = 100)
+    private String status;
 
     public TaskRequestDto(Task task) {
         this.title = task.getTitle();
         this.description = task.getDescription();
+        this.status = task.getStatus();
     }
 }

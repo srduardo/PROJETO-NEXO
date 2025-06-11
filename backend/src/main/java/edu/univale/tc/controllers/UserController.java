@@ -1,7 +1,6 @@
 package edu.univale.tc.controllers;
 
 import edu.univale.tc.dto.request.UserRequestDto;
-import edu.univale.tc.dto.response.JwtResponseDto;
 import edu.univale.tc.dto.response.UserResponseDto;
 import edu.univale.tc.services.UserService;
 import jakarta.validation.Valid;
@@ -13,7 +12,6 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/users")
-@CrossOrigin(origins = "http://localhost:5173")
 public class UserController {
 
     @Autowired
@@ -30,7 +28,7 @@ public class UserController {
     }
 
     @PostMapping("/login")
-    public ResponseEntity<JwtResponseDto> loginUser(@Valid @RequestBody UserRequestDto userRequestDto) {
+    public ResponseEntity<UserResponseDto> loginUser(@Valid @RequestBody UserRequestDto userRequestDto) {
         return ResponseEntity.ok(userService.verifyAuthentication(userRequestDto));
     }
 
@@ -40,13 +38,13 @@ public class UserController {
     }
 
     @PutMapping("/{id}/update")
-    public ResponseEntity<String> updateUsername(@PathVariable Integer id,
-            @Valid @RequestBody String userRequestDto) {
+    public ResponseEntity<UserResponseDto> updateUsername(@PathVariable Integer id,
+            @Valid @RequestBody UserRequestDto userRequestDto) {
         return ResponseEntity.ok(userService.updateUsername(id, userRequestDto));
     }
 
     @DeleteMapping("/{id}/delete")
-    public ResponseEntity<UserResponseDto> deleteUser(@PathVariable Integer id) {
+    public ResponseEntity<Object> deleteUser(@PathVariable Integer id) {
         userService.deleteUser(id);
         return ResponseEntity.status(204).build();
     }

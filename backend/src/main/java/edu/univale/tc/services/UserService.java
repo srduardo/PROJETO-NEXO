@@ -3,7 +3,6 @@ package edu.univale.tc.services;
 import edu.univale.tc.domain.Collaboration;
 import edu.univale.tc.domain.User;
 import edu.univale.tc.dto.request.UserRequestDto;
-import edu.univale.tc.dto.response.JwtResponseDto;
 import edu.univale.tc.dto.response.UserResponseDto;
 import edu.univale.tc.exceptions.InvalidCredentialsException;
 import edu.univale.tc.exceptions.ResourceNotFoundException;
@@ -47,7 +46,7 @@ public class UserService {
     private final BCryptPasswordEncoder encoderPassword = new BCryptPasswordEncoder(12);
 
     public List<UserResponseDto> findAllUsersResponse() {
-        return userRepository.findAll().stream().map(UserResponseDto::new).toList();
+        return userRepository.findAll().stream().map((user) -> new UserResponseDto(user, null)).toList();
     }
 
     public User findUserById(long id) {
@@ -56,7 +55,7 @@ public class UserService {
 
     public UserResponseDto findUserResponseById(long id) throws ResourceNotFoundException {
         User user = userRepository.findById(id).orElseThrow(ResourceNotFoundException::new);
-        return new UserResponseDto(user);
+        return new UserResponseDto(user, null);
     }
 
     public User findUserByEmail(String email) {
@@ -71,18 +70,18 @@ public class UserService {
         BeanUtils.copyProperties(userRequestDto, newUser);
         newUser.setPassword(encoderPassword.encode(newUser.getPassword()));
         userRepository.save(newUser);
-        return new UserResponseDto(newUser);
+        return new UserResponseDto(newUser, null);
     }
 
-    public String updateUsername(long id, String newUsername) throws RuntimeException {
+    public UserResponseDto updateUsername(long id, UserRequestDto newUsername) throws RuntimeException {
         User updatedUser = userRepository.findById(id).orElseThrow(ResourceNotFoundException::new);
 
         if (newUsername == null)
             throw new IllegalArgumentException("Erro ao atualizar usuário!");
 
-        updatedUser.setUsername(newUsername);
+        updatedUser.setUsername(newUsername.getUsername());
         userRepository.save(updatedUser);
-        return updatedUser.getUsername();
+        return new UserResponseDto(updatedUser, null);
     }
 
     public void deleteUser(long id) {
@@ -106,7 +105,7 @@ public class UserService {
         return Collections.binarySearch(storedEmails, userEmail) > -1;
     }
 
-    public JwtResponseDto verifyAuthentication(UserRequestDto userRequestDto) {
+    public UserResponseDto verifyAuthentication(UserRequestDto userRequestDto) {
         Authentication authentication = authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(userRequestDto.getEmail(), userRequestDto.getPassword()));
 
@@ -114,6 +113,6 @@ public class UserService {
             throw new InvalidCredentialsException("Authenticação inválida");
         User user = findUserByEmail(userRequestDto.getEmail());
 
-        return new JwtResponseDto(user.getId(), user.getUsername(), user.getEmail(), jwtService.generateToken(user.getEmail()));
+        return new UserResponseDto(user, jwtService.generateToken(user.getEmail()));
     }
 }

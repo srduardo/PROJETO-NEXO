@@ -29,28 +29,30 @@ public class TaskController {
         return ResponseEntity.ok(taskService.findAllTasksResponse());
     }
 
+    @GetMapping("/{squadId}/{userId}")
+    public ResponseEntity<List<TaskResponseDto>> getAllTasksByUserIdAndSquadId(@PathVariable long squadId, @PathVariable long userId) {
+        return ResponseEntity.ok(taskService.findAllTasksResponseByUserIdAndSquadId(squadId, userId));
+    }
+
     @GetMapping("/{taskId}")
     public ResponseEntity<TaskResponseDto> getTaskById(@PathVariable long taskId) {
         return ResponseEntity.ok(taskService.findTaskResponseById(taskId));
     }
 
     @PostMapping("/{squadId}/{userId}/create")
-    public ResponseEntity<TaskResponseDto> createTask(@RequestBody TaskRequestDto taskRequestDto, @PathVariable long squadId, @PathVariable long userId) {
+    public ResponseEntity<TaskResponseDto> createTask(@RequestBody TaskRequestDto taskRequestDto,
+            @PathVariable long squadId, @PathVariable long userId) {
         return ResponseEntity.status(201).body(taskService.createNewTask(taskRequestDto, squadId, userId));
     }
 
     @PutMapping("/{taskId}/update")
-    public ResponseEntity<TaskResponseDto> updateTask(@RequestBody TaskRequestDto taskRequestDto, @PathVariable long taskId) {
+    public ResponseEntity<TaskResponseDto> updateTask(@RequestBody TaskRequestDto taskRequestDto,
+            @PathVariable long taskId) {
         return ResponseEntity.ok(taskService.updateTaskData(taskRequestDto, taskId));
     }
 
-    @PutMapping("/{taskId}/status")
-        public ResponseEntity<TaskResponseDto> updateTaskStatus(@RequestBody String newStatus, @PathVariable long taskId) {
-        return ResponseEntity.ok(taskService.updateStatus(newStatus, taskId));
-    }
-
     @DeleteMapping("/{taskId}/delete")
-    public ResponseEntity<Object> deleteTask(@PathVariable long taskId) {
+    public ResponseEntity<Void> deleteTask(@PathVariable long taskId) {
         taskService.deleteTaskById(taskId);
         return ResponseEntity.status(204).build();
     }

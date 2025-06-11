@@ -5,20 +5,21 @@ import Input from '../../components/input/Input';
 import Button from '../../components/button/Button';
 import { Link, useNavigate } from 'react-router-dom';
 import { logar } from '../../services/loginService';
-import type {LoginResponse} from '../../types/LoginResponse'
+import type {UserResponse} from '../../types/UserResponse'
 
 export default function Login() {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const navigate = useNavigate();
+
     const handleLogin = async () => {
-        if (email === null || password === null) return
+        if (email === null || password === null) return;
         const username: string = "Usuário";
-        const dados: LoginResponse | string = await logar({username, email, password})
+        const dados: UserResponse = await logar({username, email, password});
         console.log(dados);
-        const dadosString: string = JSON.stringify(dados);
+        const dadosString: string = JSON.stringify(dados);      
         localStorage.setItem('userDetails', dadosString);
-        if (dados) navigate('/home');
+        if (dados) navigate('/equipes');
     };
 
     return (
@@ -31,9 +32,9 @@ export default function Login() {
 
             <div className={styles.right}>
                 <h1>JUNTE-SE A SUA EQUIPE!</h1>
-                <Input width={400} margin={15} placeholder='Insira seu email' value={email} onChange={(e) => setEmail(e.target.value)}></Input>
-                <Input width={400} margin={15} placeholder='Insira sua senha' value={password} onChange={(e) => setPassword(e.target.value)}></Input >
-                <Button width={200} margin={15} height={45} color='#EBC351' mouseDownColor='"#AD903E"' onClick={handleLogin}>CONECTAR</Button>
+                <Input type='email' width={400} margin={15} placeholder='Insira seu email' value={email} onChange={(e) => setEmail(e.target.value)}></Input>
+                <Input type='password' width={400} margin={15} placeholder='Insira sua senha' value={password} onChange={(e) => setPassword(e.target.value)}></Input >
+                <Button width={200} margin={15} height={45} color='#EBC351' mouseDownColor='#AD903E' onClick={handleLogin}>CONECTAR</Button>
                 <Link to={'/cadastro'} className={styles.link}>Cadastre-se</Link>
             </div>
         </div>

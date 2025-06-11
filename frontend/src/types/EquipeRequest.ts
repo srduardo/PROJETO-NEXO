@@ -1,4 +1,4 @@
 export type EquipeRequest = {
-    id: number;
+    id: number | string;
     name: string;
 }

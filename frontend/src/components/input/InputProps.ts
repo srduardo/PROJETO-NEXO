@@ -4,4 +4,5 @@ export type InputProps = {
     value: string | undefined,
     margin: number | string,
     onChange?: (e: React.ChangeEvent<HTMLInputElement>) => void;
+    type: string
 }

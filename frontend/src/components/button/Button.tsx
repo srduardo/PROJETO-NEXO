@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import type {ButtonProps} from './ButtonProps';
 
-export default function Button({width, height, color='#EBC351', mouseDownColor='#AD903E', children, onClick, colorText = 'white', margin}: ButtonProps) {
+export default function Button({width, height, color='#EBC351', mouseDownColor='#AD903E', children, colorText = 'white', margin, onClick}: ButtonProps) {
   const [hover, setHover] = useState(false);
   
     const style = {

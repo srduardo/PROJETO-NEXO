@@ -1,6 +1,6 @@
-export type LoginResponse = {
+export type UserResponse = {
     id: number;
     username: string;
     email: string;
-    token: string;
+    jwt: string | null;
 }

@@ -1,4 +1,4 @@
-import type { LoginResponse } from "../types/LoginResponse";
+import type { UserResponse } from "../types/UserResponse";
 
 const API_BASE_URL = 'http://localhost:8080/api';
 
@@ -11,17 +11,17 @@ interface RequestOptions {
   auth?: boolean;
 }
 
-const api = async <T>(endpoint: string, options: RequestOptions = {}): Promise<T | string> => {
+const api = async <T>(endpoint: string, options: RequestOptions = {}): Promise<T> => {
   const { method = 'GET', body, headers = {}, auth = false } = options;
 
   const userDetailsString = localStorage.getItem('userDetails');
-  const userDetails: LoginResponse = JSON.parse(userDetailsString!);
+  const userDetails: UserResponse = JSON.parse(userDetailsString!);
 
   const config: RequestInit = {
     method,
     headers: {
       'Content-Type': 'application/json',
-      ...(auth && userDetails.token ? { Authorization: `Bearer ${userDetails.token}` } : {}),
+      ...(auth && userDetails.jwt ? { Authorization: `Bearer ${userDetails.jwt}` } : {}),
       ...headers,
     },
     ...(body ? { body: JSON.stringify(body) } : {}),
@@ -34,7 +34,11 @@ const api = async <T>(endpoint: string, options: RequestOptions = {}): Promise<T
     throw new Error(errorData.message || 'Erro na requisição');
   }
 
-  return response.json ? response.json() : response.text();
+  if (response.status === 204) {
+    return null as T;
+  }
+  
+  return response.json();
 };
 
 export default api;

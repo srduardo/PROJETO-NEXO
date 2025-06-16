@@ -1,7 +1,9 @@
+import type { MembroResponse } from '../../types/MembroResponse';
 import type { Registro } from '../../types/Registro';
 
 export interface TableProps {
     values?: Registro[];
+    member?: MembroResponse | null;
     onDelete?: (index: number) => void;
     onRemove?: (userId: number, squadId: number | null) => void;
     onEdit?: (index: number) => void; 
@@ -16,4 +18,5 @@ export interface TableProps {
     column4: string;
     
     type?: string;
+    isTasksOwner?: boolean;
 }

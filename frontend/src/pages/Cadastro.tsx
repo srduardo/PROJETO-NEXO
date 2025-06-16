@@ -1,11 +1,11 @@
 import { useState } from 'react';
-import styles from './Cadastro.module.css';
-import logo from '../../assets/logo-nexo.png';
-import Input from '../../components/input/Input';
-import Button from '../../components/button/Button';
+import styles from './styles/Inicio.module.css';
+import logo from '../assets/logo-nexo.png';
+import Input from '../components/input/Input';
+import Button from '../components/button/Button';
 import { Link, useNavigate } from 'react-router-dom';
-import { cadastrar } from '../../services/cadastroService';
-import type { UserResponse } from '../../types/UserResponse';
+import { cadastrar } from '../services/cadastroService';
+import type { UserResponse } from '../types/UserResponse';
 
 export default function Cadastro() {
     const [username, setUsername] = useState('');

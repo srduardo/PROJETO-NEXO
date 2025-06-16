@@ -1,6 +1,7 @@
 import api from './api';
 import type { EquipeResponse } from '../types/EquipeResponse';
 import type { EquipeRequest } from '../types/EquipeRequest';
+import type { MembroResponse } from '../types/MembroResponse';
 
 export const getEquipe = async (squadId: number): Promise<EquipeResponse> => {
     console.log('Get dados equipe')
@@ -17,8 +18,8 @@ export const getEquipes = async (userId: number): Promise<EquipeResponse[]> => {
     });
 };
 
-export const apagarEquipe = async (userId: number, squadId: number | string): Promise<EquipeResponse[]> => {
-    return api<EquipeResponse[]>(`/squads/${squadId}/${userId}/delete`, {
+export const apagarEquipe = async (squadId: number | string): Promise<EquipeResponse[]> => {
+    return api<EquipeResponse[]>(`/squads/${squadId}/delete`, {
         method: 'DELETE',
         auth: true,
     });
@@ -40,6 +41,13 @@ export const editarEquipe = async (id: number | string, equipeEditada: EquipeReq
         body: equipeEditada
   });
 };
+
+export const getLider = async (idEquipe: number): Promise<MembroResponse> => {
+    return api<MembroResponse>(`/collaborations/squad/${idEquipe}/owner`, {
+        method: 'GET',
+        auth: true,
+  });
+}
 
 
 

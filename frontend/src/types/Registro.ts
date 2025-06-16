@@ -4,4 +4,5 @@ export type Registro = {
     name: string | null;
     secondValue: string | number | null; 
     thirdValue: string | number | null;
+    fourthValue: string | number | null;
 }

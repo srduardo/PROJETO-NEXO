@@ -4,7 +4,7 @@ import { IconClipboardTextFilled, IconTrashFilled, IconDoorExit, IconCircleCheck
 import Button from '../button/Button';
 import ProgressBar from '../progress-bar/ProgressBar';
 
-export default function Table({ values = [], type = '', onDelete = () => { }, onEdit = () => { }, onRemove = () => { }, onChange = () => { }, onAcessOneArg = () => { }, onAcessTwoArgs = () => { }, column1, column2, column3, column4 }: TableProps) {
+export default function Table({ values = [], member = null, isTasksOwner = false, type = '', onDelete = () => { }, onEdit = () => { }, onRemove = () => { }, onChange = () => { }, onAcessOneArg = () => { }, onAcessTwoArgs = () => { }, column1, column2, column3, column4 }: TableProps) {
     return (
         <table className={styles.table}>
             <thead className={styles.header}>
@@ -42,17 +42,32 @@ export default function Table({ values = [], type = '', onDelete = () => { }, on
                         )}
                         {type === 'membros' && (
                             // <td className={styles.text}>{value.thirdValue}/{value.secondValue}</td>
-                            <td className={styles.text}><ProgressBar progress={value.thirdValue} max={value.secondValue}/></td>
+                            <td className={styles.text}><ProgressBar progress={value.thirdValue} max={value.secondValue} /></td>
                         )}
-                        {type === 'membros' && (
+                        {type === 'membros' && member?.role === 'OWNER' && (
                             <td className={styles.lastText}>
-                                <button onClick={() => onRemove(value.identifier, value.secondIdentifier)} style={{ background: "none", border: "none", cursor: "pointer", color: "red" }}><IconDoorExit /></button>
+                                {
+                                    member?.role === value.fourthValue ?
+                                        <div style={{ background: "none", border: "none", color: "gray" }}><IconDoorExit /></div>
+                                        :
+                                        <button onClick={() => onRemove(value.identifier, value.secondIdentifier)} style={{ background: "none", border: "none", cursor: "pointer", color: "red" }}><IconDoorExit /></button>
+                                }
+                            </td>
+                        )}
+                        {type === 'membros' && member?.role === 'MEMBER' && (
+                            <td className={styles.lastText}>
+                                {
+                                    member?.memberId !== value.identifier ?
+                                        <div style={{ background: "none", border: "none", color: "gray" }}><IconDoorExit /></div>
+                                        :
+                                        <button onClick={() => onRemove(value.identifier, value.secondIdentifier)} style={{ background: "none", border: "none", cursor: "pointer", color: "red" }}><IconDoorExit /></button>
+                                }
                             </td>
                         )}
 
-                        
+
                         {type === 'tarefas' && (
-                            <td className={styles.firstText} style={{padding: '15px', color:'black', fontWeight:'bold', fontSize:20}}>{value.name}</td>
+                            <td className={styles.firstText} style={{ padding: '15px', color: 'black', fontWeight: 'bold', fontSize: 20 }}>{value.name}</td>
                         )}
                         {type === 'tarefas' && (
                             <td className={styles.text}>{value.secondValue}</td>
@@ -62,20 +77,30 @@ export default function Table({ values = [], type = '', onDelete = () => { }, on
                         )}
                         {type === 'tarefas' && (
                             <td className={styles.lastText}>
-                                {
-                                    value.thirdValue === 'PENDENTE' ? 
-                                    <button onClick={() => onChange(value.identifier)} style={{ background: "none", border: "none", cursor: "pointer", color: "gray" }}><IconCircleCheckFilled /></button>
+                                { isTasksOwner  ? 
+                                    <>
+                                        {
+                                            value.thirdValue === 'PENDENTE' ?
+                                                <button onClick={() => onChange(value.identifier)} style={{ background: "none", border: "none", cursor: "pointer", color: "gray" }}><IconCircleCheckFilled /></button>
+                                                :
+                                                <button onClick={() => onChange(value.identifier)} style={{ background: "none", border: "none", cursor: "pointer", color: "green" }}><IconCircleCheckFilled /></button>
+                                        }
+                                        <button onClick={() => onEdit(value.identifier)} style={{ background: "none", border: "none", cursor: "pointer", color: "#EBC351" }}><IconClipboardTextFilled /></button>
+                                        <button onClick={() => onDelete(value.identifier)} style={{ background: "none", border: "none", cursor: "pointer", color: "red" }}><IconTrashFilled /></button>
+                                    </>
                                     :
-                                    <button onClick={() => onChange(value.identifier)} style={{ background: "none", border: "none", cursor: "pointer", color: "green" }}><IconCircleCheckFilled /></button>
+                                    <>
+                                        <button style={{ background: "none", border: "none", color: "gray" }}><IconCircleCheckFilled /></button>
+                                        <button style={{ background: "none", border: "none", color: "gray" }}><IconClipboardTextFilled /></button>
+                                        <button style={{ background: "none", border: "none", color: "gray" }}><IconTrashFilled /></button>
+                                    </>
                                 }
-                                <button onClick={() => onEdit(value.identifier)} style={{ background: "none", border: "none", cursor: "pointer", color: "#EBC351" }}><IconClipboardTextFilled /></button>
-                                <button onClick={() => onDelete(value.identifier)} style={{ background: "none", border: "none", cursor: "pointer", color: "red" }}><IconTrashFilled /></button>
                             </td>
                         )}
 
                     </tr>
                 ))}
             </tbody>
-        </table>
+        </table >
     );
 }

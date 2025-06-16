@@ -1,5 +1,5 @@
 import { Navigate } from "react-router-dom";
-import { autenticado } from "../../services/loginService";
+import { autenticado } from "../services/loginService";
 
 
 interface PrivadaProps {

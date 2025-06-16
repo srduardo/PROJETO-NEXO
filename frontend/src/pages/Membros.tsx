@@ -1,28 +1,29 @@
-import styles from './Membros.module.css';
-import logo from '../../assets/logo-n.png';
-import Button from '../../components/button/Button';
-import Text from '../../components/text/Text';
-import TableContainer from '../../components/table-container/TableContainer';
-import Table from '../../components/table/Table';
+import styles from './styles/Principal.module.css';
+import logo from '../assets/logo-n.png';
+import Button from '../components/button/Button';
+import Text from '../components/text/Text';
+import TableContainer from '../components/table-container/TableContainer';
+import Table from '../components/table/Table';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useEffect, useState } from 'react';
-import type { Registro } from '../../types/Registro';
-import type { MembroResponse } from '../../types/MembroResponse';
-import { getMembros } from '../../services/membroService';
-import type { EquipeResponse } from '../../types/EquipeResponse';
-import { getEquipe } from '../../services/equipeService';
-import InputBox from '../../components/input-box/InputBox';
-import Input from '../../components/input/Input';
+import type { Registro } from '../types/Registro';
+import type { MembroResponse } from '../types/MembroResponse';
+import { excluirMembro, getMembro, getMembros } from '../services/membroService';
+import type { EquipeResponse } from '../types/EquipeResponse';
+import { getEquipe } from '../services/equipeService';
+import InputBox from '../components/input-box/InputBox';
+import Input from '../components/input/Input';
 import { XIcon } from 'lucide-react';
-import { aceitar, convidar } from '../../services/conviteService';
-import { connectWebSocket } from '../../services/websocketService';
-import { getJwt } from '../../services/loginService';
-import type { ConviteResponse } from '../../types/ConviteResponse';
-import Invite from '../../components/invite/Invite';
+import { aceitar, convidar } from '../services/conviteService';
+import { connectWebSocket } from '../services/websocketService';
+import { getJwt, getUserDetails } from '../services/loginService';
+import type { ConviteResponse } from '../types/ConviteResponse';
+import Invite from '../components/invite/Invite';
 
 export default function Membros() {
     const [registros, setRegistros] = useState<Registro[]>();
     const [equipe, setEquipe] = useState<EquipeResponse>();
+    const [membro, setMembro] = useState<MembroResponse>();
     const [viewInviteBox, setViewInviteBox] = useState<boolean>(false);
     const [emailMembro, setEmailMembro] = useState<string>('');
     const [convite, setConvite] = useState<ConviteResponse>();
@@ -43,8 +44,20 @@ export default function Membros() {
         navigate('/equipes')
     }
 
-    const removerMembro = () => {
+    const removerMembro = (userId: number, squadId: number | null) => {
+        if (registros) {
+            for (let i = 0; i < registros.length; i++) {
+                if (registros[i].identifier == userId) {
+                    setRegistros(registros.filter((e) => e.identifier !== userId));
+                    excluirMembro(squadId!, userId);
 
+                    if (membro?.memberId === userId) {
+                        navigate('/equipes');
+                    }
+                }
+            }
+
+        }
     }
 
     const showInviteBox = () => {
@@ -53,9 +66,15 @@ export default function Membros() {
 
     const getListaMembros = async (id: number) => {
         const membros: MembroResponse[] = await getMembros(id);
-        const listaRegistros: Registro[] = membros.map((m) => { return { identifier: m.memberId, secondIdentifier: id, name: m.memberName, secondValue: m.tasksAmount, thirdValue: m.finishedTasksAmount } });
+        const listaRegistros: Registro[] = membros.map((m) => { return { identifier: m.memberId, secondIdentifier: id, name: m.memberName, secondValue: m.tasksAmount, thirdValue: m.finishedTasksAmount, fourthValue: m.role } });
         setRegistros(listaRegistros);
         console.log(listaRegistros);
+    }
+
+    const getMembroAtual = async (squadId: number, userId: number) => {
+        const membroAtual: MembroResponse = await getMembro(squadId, userId);
+        setMembro(membroAtual);
+        console.log(membroAtual);
     }
 
     const getDadosEquipe = async (id: number) => {
@@ -78,7 +97,7 @@ export default function Membros() {
         if (convite?.squadId) {
             aceitar(convite?.squadId);
             setIsVisible(false);
-            
+            navigate(`/equipes/${convite.squadId}/membros`);
         }
     }
 
@@ -87,14 +106,13 @@ export default function Membros() {
     }
 
     useEffect(() => {
-        console.log('Use effect');
         if (idEquipe) {
-            const token: string = String(getJwt());
-            connectWebSocket(token, onInvite);
-            console.log(token);
+            connectWebSocket(String(getJwt()), onInvite);
             getListaMembros(Number(idEquipe));
+            getMembroAtual(Number(idEquipe), Number(getUserDetails().id));
             getDadosEquipe(Number(idEquipe));
         }
+        console.log('a');
     }, [])
 
     return (
@@ -105,19 +123,24 @@ export default function Membros() {
                 </div>
 
                 <div className={styles.buttonContainer}>
-                    <Button width={200} margin={15} height={45} onClick={showInviteBox}>NOVO MEMBRO</Button>
+                    {membro?.role === 'OWNER' ?
+                        <Button width={200} margin={15} height={45} onClick={showInviteBox}>NOVO MEMBRO</Button>
+                        :
+                        <></>
+
+                    }
                     <Button width={200} margin={15} height={45} color='#EB5151' mouseDownColor='#B23B3B' onClick={voltar}>VOLTAR</Button>
                 </div>
             </div>
 
-                <Invite invite={convite!} isVisible={isVisible} onAccept={aceitarConvite} onRecuse={recusarConvite} />
+            <Invite invite={convite!} isVisible={isVisible} onAccept={aceitarConvite} onRecuse={recusarConvite} />
 
             <div className={styles.principal}>
                 <div>
                     <Text size={30}>{equipe?.squadName}</Text>
                 </div>
                 <div>
-                    <TableContainer><Table type='membros' values={registros} onAcessTwoArgs={acessarTarefas} onRemove={removerMembro} column1='MEMBRO' column2='QUANTIDADE DE ATIVIDADES' column3='PROGRESSO' column4='AÇÕES'></Table></TableContainer>
+                    <TableContainer><Table type='membros' values={registros} member={membro!} onAcessTwoArgs={acessarTarefas} onRemove={removerMembro} column1='MEMBRO' column2='QUANTIDADE DE ATIVIDADES' column3='PROGRESSO' column4='AÇÕES'></Table></TableContainer>
                 </div>
             </div>
 

@@ -3,4 +3,5 @@ export type MembroResponse = {
     memberName: string;
     tasksAmount: number;
     finishedTasksAmount: number;
+    role: string;
 }

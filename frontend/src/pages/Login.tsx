@@ -1,11 +1,11 @@
 import { useState } from 'react';
-import styles from './Login.module.css';
-import logo from '../../assets/logo-nexo.png';
-import Input from '../../components/input/Input';
-import Button from '../../components/button/Button';
+import styles from './styles/Inicio.module.css';
+import logo from '../assets/logo-nexo.png';
+import Input from '../components/input/Input';
+import Button from '../components/button/Button';
 import { Link, useNavigate } from 'react-router-dom';
-import { logar } from '../../services/loginService';
-import type {UserResponse} from '../../types/UserResponse'
+import { logar } from '../services/loginService';
+import type { UserResponse } from '../types/UserResponse'
 
 export default function Login() {
     const [email, setEmail] = useState('');
@@ -15,9 +15,9 @@ export default function Login() {
     const handleLogin = async () => {
         if (email === null || password === null) return;
         const username: string = "Usuário";
-        const dados: UserResponse = await logar({username, email, password});
+        const dados: UserResponse = await logar({ username, email, password });
         console.log(dados);
-        const dadosString: string = JSON.stringify(dados);      
+        const dadosString: string = JSON.stringify(dados);
         localStorage.setItem('userDetails', dadosString);
         if (dados) navigate('/equipes');
     };

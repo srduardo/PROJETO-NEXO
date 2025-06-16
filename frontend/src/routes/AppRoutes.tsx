@@ -1,10 +1,10 @@
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
-import Login from '../pages/login/Login';
-import Cadastro from '../pages/cadastro/Cadastro';
-import Privada from '../pages/rota-protegida/Privada';
-import Membros from '../pages/membros/Membros';
-import Tarefas from '../pages/tarefas/Tarefas';
-import Equipes from '../pages/equipes/Equipes';
+import Login from '../pages/Login';
+import Cadastro from '../pages/Cadastro';
+import Privada from '../pages/Privada';
+import Membros from '../pages/Membros';
+import Tarefas from '../pages/Tarefas';
+import Equipes from '../pages/Equipes';
 
 export function AppRoutes() {
   return (

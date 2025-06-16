@@ -1,34 +1,34 @@
-import styles from './Tarefas.module.css';
-import logo from '../../assets/logo-n.png';
-import Button from '../../components/button/Button';
-import Text from '../../components/text/Text';
-import TableContainer from '../../components/table-container/TableContainer';
-import Table from '../../components/table/Table';
+import styles from './styles/Principal.module.css';
+import logo from '../assets/logo-n.png';
+import Button from '../components/button/Button';
+import Text from '../components/text/Text';
+import TableContainer from '../components/table-container/TableContainer';
+import Table from '../components/table/Table';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useEffect, useState } from 'react';
-import InputBox from '../../components/input-box/InputBox';
-import Input from '../../components/input/Input';
+import InputBox from '../components/input-box/InputBox';
+import Input from '../components/input/Input';
 import { XIcon } from 'lucide-react';
-import type { TarefaRequest } from '../../types/TarefaRequest';
-import { apagarTarefa, atualizarTarefa, criarTarefa, getTarefas } from '../../services/tarefaService';
-import type { TarefaResponse } from '../../types/TarefaResponse';
-import type { Registro } from '../../types/Registro';
-import { pegarUsuario } from '../../services/usuarioService';
-import type { UserResponse } from '../../types/UserResponse';
-// import type { Registro } from '../../types/Registro';
-// import type { MembroResponse } from '../../types/MembroResponse';
-// import { getMembros } from '../../services/membroService';
-// import type { EquipeResponse } from '../../types/EquipeResponse';
-// import { getEquipe } from '../../services/equipeService';
+import type { TarefaRequest } from '../types/TarefaRequest';
+import { apagarTarefa, atualizarTarefa, criarTarefa, getTarefas } from '../services/tarefaService';
+import type { TarefaResponse } from '../types/TarefaResponse';
+import type { Registro } from '../types/Registro';
+import type { MembroResponse } from '../types/MembroResponse';
+import { getMembro } from '../services/membroService';
+import { getUserDetails } from '../services/loginService';
+import { getLider } from '../services/equipeService';
 
 export default function Tarefas() {
     const [registros, setRegistros] = useState<Registro[]>([]);
-    const [membro, setMembro] = useState<UserResponse>();
+    // const [userDetails, setUserDetails] = useState<UserResponse>();
+    const [membro, setMembro] = useState<MembroResponse>();
+    const [lider, setLider] = useState<MembroResponse>();
+    const [donoTarefas, setDonoTarefas] = useState<boolean>();
     const [nomeTarefa, setNomeTarefa] = useState<string>('');
     const [descricaoTarefa, setDescricaoTarefa] = useState<string>('');
     const [viewTaskBox, setViewTaskBox] = useState<boolean>(false);
     const [viewEditBox, setViewEditBox] = useState<boolean>(false);
-    const [atualizar, setAtualizar] = useState<boolean>(true);
+    const [atualizarStatus, setAtualizarStatus] = useState<boolean>(true);
     const [idTarefaEditando, setIdTarefaEditando] = useState<number>();
 
     const { idMembro, idEquipe } = useParams();
@@ -40,23 +40,21 @@ export default function Tarefas() {
         if (nomeTarefa && descricaoTarefa) {
             const tarefa: TarefaRequest = { title: nomeTarefa, description: descricaoTarefa, status: 'PENDENTE' };
             const tarefaCriada: TarefaResponse = await criarTarefa(Number(idMembro), Number(idEquipe), tarefa);
-            const registro: Registro = { identifier: tarefaCriada.id, secondIdentifier: Number(idEquipe), name: tarefaCriada.title, secondValue: tarefaCriada.description, thirdValue: tarefaCriada.status };
+            const registro: Registro = { identifier: tarefaCriada.id, secondIdentifier: Number(idEquipe), name: tarefaCriada.title, secondValue: tarefaCriada.description, thirdValue: tarefaCriada.status, fourthValue: null };
             if (registros) {
-                registros.push(registro);
-                setRegistros(registros);
+                setRegistros([...registros, registro]);
                 setViewTaskBox(false);
-                setAtualizar(true);
-                setNomeTarefa(' ');
-                setDescricaoTarefa(' ');
+                // setAtualizar(true);
+                setNomeTarefa('');
+                setDescricaoTarefa('');
                 return;
             } else {
                 const novaListaRegistros: Registro[] = [registro];
                 setRegistros(novaListaRegistros);
                 setViewTaskBox(false);
-                setNomeTarefa(' ');
-                setDescricaoTarefa(' ');
+                setNomeTarefa('');
+                setDescricaoTarefa('');
             }
-            setAtualizar(true);
         } else {
             return;
         }
@@ -70,8 +68,7 @@ export default function Tarefas() {
                     apagarTarefa(Number(idTarefa));
                 }
             }
-        }
-        setAtualizar(true);
+        } else { return }
     }
 
     const mudarStatus = async (idTarefa: string | number) => {
@@ -87,15 +84,13 @@ export default function Tarefas() {
                         tarefaAtualizada = await atualizarTarefa(Number(idTarefa), tarefa);
                     }
                     if (tarefaAtualizada) {
-                        const registro: Registro = { identifier: tarefaAtualizada.id, secondIdentifier: Number(idEquipe), name: tarefaAtualizada.title, secondValue: tarefaAtualizada.description, thirdValue: tarefaAtualizada.status };
-                        registros.splice(i, 1, registro);
-                        const novos: Registro[] = registros;
-                        setRegistros(novos);
+                        const novosRegistros: Registro[] = registros.map(t => t.identifier === Number(idTarefa) ? { ...t, title: tarefaAtualizada.title, description: tarefaAtualizada.description, status: tarefaAtualizada.status } : t);
+                        setRegistros(novosRegistros);
                     }
                 }
             }
         }
-        setAtualizar(true);
+        setAtualizarStatus(true);
     }
 
     const editarTarefa = async () => {
@@ -105,7 +100,7 @@ export default function Tarefas() {
                     const tarefa: TarefaRequest = { title: nomeTarefa, description: descricaoTarefa, status: String(registros[i].thirdValue) };
                     const tarefaAtualizada: TarefaResponse = await atualizarTarefa(Number(idTarefaEditando), tarefa);
 
-                    const registro: Registro = { identifier: tarefaAtualizada.id, secondIdentifier: Number(idEquipe), name: tarefaAtualizada.title, secondValue: tarefaAtualizada.description, thirdValue: tarefaAtualizada.status };
+                    const registro: Registro = { identifier: tarefaAtualizada.id, secondIdentifier: Number(idEquipe), name: tarefaAtualizada.title, secondValue: tarefaAtualizada.description, thirdValue: tarefaAtualizada.status, fourthValue: null };
                     registros.splice(i, 1, registro);
                     const novos: Registro[] = registros;
                     setRegistros(novos);
@@ -115,7 +110,6 @@ export default function Tarefas() {
                     setViewEditBox(false);
                 }
             }
-            setAtualizar(true);
         } else {
             return;
         }
@@ -131,31 +125,27 @@ export default function Tarefas() {
         navigate(`/equipes/${idEquipe}/membros`);
     }
 
-    const getListaTarefas = async () => {
-        if (atualizar) {
-            const tarefas: TarefaResponse[] = await getTarefas(Number(idMembro), Number(idEquipe));
-            const listaRegistros: Registro[] = tarefas.map((t) => { return { identifier: t.id, secondIdentifier: Number(idMembro), name: t.title, secondValue: t.description, thirdValue: t.status } });
-            setRegistros(listaRegistros);
-            setAtualizar(false);
-            console.log('aa');
-        }
-    }
-
-    const getUsuario = async (idMembro: number) => {
-        if (atualizar) {
-            const usuario: UserResponse = await pegarUsuario(Number(idMembro));
-            setMembro(usuario);
-            setAtualizar(false);
-            console.log('aa');
-        }
-    }
-
     useEffect(() => {
-        if (idEquipe) {
-            getListaTarefas();
-            getUsuario(Number(idMembro));
+        if (idEquipe && idMembro) {
+            const getDados = async () => {
+                const tarefas: TarefaResponse[] = await getTarefas(Number(idMembro), Number(idEquipe));
+                const listaRegistros: Registro[] = tarefas.map((t) => { return { identifier: t.id, secondIdentifier: Number(idMembro), name: t.title, secondValue: t.description, thirdValue: t.status, fourthValue: null } });
+                setRegistros(listaRegistros);
+
+                const membroAtual: MembroResponse = await getMembro(Number(idEquipe), Number(idMembro));
+                setMembro(membroAtual);
+
+                const liderAtual: MembroResponse = await getLider(Number(idEquipe));
+                setLider(liderAtual);
+
+                const perm: boolean = membroAtual?.memberId === getUserDetails().id || liderAtual?.memberId === getUserDetails().id;
+                setDonoTarefas(perm);
+            }
+
+            getDados();
+            setAtualizarStatus(false);
         }
-    }, [registros && atualizar])
+    }, [atualizarStatus])
 
     return (
         <div className={styles.container}>
@@ -165,17 +155,21 @@ export default function Tarefas() {
                 </div>
 
                 <div className={styles.buttonContainer}>
-                    <Button width={200} margin={15} height={45} onClick={() => setViewTaskBox(true)}>NOVA TAREFA</Button>
+                    {(membro && getUserDetails().id && membro?.memberId == getUserDetails().id) || getUserDetails().id === lider?.memberId ?
+                        <Button width={200} margin={15} height={45} onClick={() => setViewTaskBox(true)}>NOVA TAREFA</Button>
+                        :
+                        <></>
+                    }
                     <Button width={200} margin={15} height={45} color='#EB5151' mouseDownColor='#B23B3B' onClick={voltar}>VOLTAR</Button>
                 </div>
             </div>
 
             <div className={styles.principal}>
                 <div>
-                    <Text size={30}>{membro?.username}</Text>
+                    <Text size={30}>{membro?.memberName}</Text>
                 </div>
                 <div>
-                    <TableContainer><Table type='tarefas' values={registros} onChange={mudarStatus} onDelete={deletarTarefa} onEdit={showEditBox} column1='TAREFA' column2='DESCRIÇÃO' column3='STATUS' column4='AÇÕES'></Table></TableContainer>
+                    <TableContainer><Table type='tarefas' member={membro} isTasksOwner={donoTarefas} values={registros} onChange={mudarStatus} onDelete={deletarTarefa} onEdit={showEditBox} column1='TAREFA' column2='DESCRIÇÃO' column3='STATUS' column4='AÇÕES'></Table></TableContainer>
                 </div>
             </div>
 

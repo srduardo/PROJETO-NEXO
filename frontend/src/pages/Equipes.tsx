@@ -1,23 +1,27 @@
-import styles from './Equipes.module.css';
-import logo from '../../assets/logo-n.png';
-import Button from '../../components/button/Button';
-import type { UserResponse } from '../../types/UserResponse';
+import styles from './styles/Principal.module.css';
+import logo from '../assets/logo-n.png';
+import Button from '../components/button/Button';
+import type { UserResponse } from '../types/UserResponse';
 import { useEffect, useState } from 'react';
-import Text from '../../components/text/Text';
-import TableContainer from '../../components/table-container/TableContainer';
-import Table from '../../components/table/Table';
-import type { EquipeResponse } from '../../types/EquipeResponse';
-import { apagarEquipe, criarEquipe, editarEquipe, getEquipes } from '../../services/equipeService';
-import { getUserDetails } from '../../services/loginService';
+import Text from '../components/text/Text';
+import TableContainer from '../components/table-container/TableContainer';
+import Table from '../components/table/Table';
+import type { EquipeResponse } from '../types/EquipeResponse';
+import { apagarEquipe, criarEquipe, editarEquipe, getEquipes } from '../services/equipeService';
+import { getJwt, getUserDetails } from '../services/loginService';
 import { useNavigate } from 'react-router-dom';
-import Input from '../../components/input/Input';
+import Input from '../components/input/Input';
 import { XIcon } from "lucide-react";
-import InputBox from '../../components/input-box/InputBox';
-import TextBox from '../../components/text-box/TextBox';
-import { alterarNome, deletarUsuario } from '../../services/usuarioService';
-import type { UserRequest } from '../../types/UserRequest';
-import type { EquipeRequest } from '../../types/EquipeRequest';
-import type { Registro } from '../../types/Registro';
+import InputBox from '../components/input-box/InputBox';
+import TextBox from '../components/text-box/TextBox';
+import { alterarNome, deletarUsuario } from '../services/usuarioService';
+import type { UserRequest } from '../types/UserRequest';
+import type { EquipeRequest } from '../types/EquipeRequest';
+import type { Registro } from '../types/Registro';
+import Invite from '../components/invite/Invite';
+import type { ConviteResponse } from '../types/ConviteResponse';
+import { aceitar } from '../services/conviteService';
+import { connectWebSocket } from '../services/websocketService';
 
 
 export default function Equipes() {
@@ -30,6 +34,8 @@ export default function Equipes() {
     const [viewSquadBox, setViewSquadBox] = useState<boolean>(false);
     const [viewProfileBox, setViewProfileBox] = useState<boolean>(false);
     const [viewEditBox, setViewEditBox] = useState<boolean>(false);
+    const [isVisible, setIsVisible] = useState<boolean>(false);
+    const [convite, setConvite] = useState<ConviteResponse>();
 
     const navigate = useNavigate();
 
@@ -60,7 +66,7 @@ export default function Equipes() {
 
     const getListaEquipes = async (userId: number) => {
         const listaEquipes: EquipeResponse[] = await getEquipes(userId);
-        const listaRegistros: Registro[] = listaEquipes.map((e) => { return { identifier: e.squadId, secondIdentifier: null, name: e.squadName, secondValue: e.ownerName, thirdValue: e.membersAmount } });
+        const listaRegistros: Registro[] = listaEquipes.map((e) => { return { identifier: e.squadId, secondIdentifier: null, name: e.squadName, secondValue: e.ownerName, thirdValue: e.membersAmount, fourthValue: null } });
         setRegistros(listaRegistros);
         console.log(listaRegistros);
     }
@@ -69,7 +75,7 @@ export default function Equipes() {
         console.log('Aqui!')
         if (novaEquipe && userDetails) {
             const equipeResponse: EquipeResponse = await criarEquipe(userDetails.id, novaEquipe);
-            const registro: Registro = { identifier: equipeResponse.squadId, secondIdentifier: null, name: equipeResponse.squadName, secondValue: equipeResponse.ownerName, thirdValue: equipeResponse.membersAmount };
+            const registro: Registro = { identifier: equipeResponse.squadId, secondIdentifier: null, name: equipeResponse.squadName, secondValue: equipeResponse.ownerName, thirdValue: equipeResponse.membersAmount, fourthValue: null };
 
             if (registros) {
                 registros.push(registro);
@@ -98,7 +104,7 @@ export default function Equipes() {
                         const equipeEditada: EquipeResponse = await editarEquipe(idEquipeEditando, dados);
 
                         const listaEquipes: Registro[] = registros.filter((e) => e.identifier !== idEquipeEditando);
-                        listaEquipes.push({ identifier: equipeEditada.squadId, secondIdentifier: null, name: equipeEditada.squadName, secondValue: equipeEditada.ownerName, thirdValue: equipeEditada.membersAmount });
+                        listaEquipes.push({ identifier: equipeEditada.squadId, secondIdentifier: null, name: equipeEditada.squadName, secondValue: equipeEditada.ownerName, thirdValue: equipeEditada.membersAmount, fourthValue: null });
 
                         setRegistros(listaEquipes);
                         setViewEditBox(false);
@@ -120,7 +126,7 @@ export default function Equipes() {
                 if (registros[i].identifier == id) {
                     if (userDetails) {
                         setRegistros(registros.filter((e) => e.identifier !== id));
-                        apagarEquipe(userDetails.id, registros[i].identifier);
+                        apagarEquipe(registros[i].identifier);
                     }
                 }
             }
@@ -138,9 +144,29 @@ export default function Equipes() {
         navigate('/');
     }
 
+    const onInvite = (dadosConvite: ConviteResponse) => {
+        if (dadosConvite) {
+            setConvite(dadosConvite);
+            setIsVisible(true);
+        }
+    }
+
+    const aceitarConvite = () => {
+        if (convite?.squadId) {
+            aceitar(convite?.squadId);
+            setIsVisible(false);
+            navigate(`/equipes/${convite.squadId}/membros`);
+        }
+    }
+
+    const recusarConvite = () => {
+        setIsVisible(false);
+    }
+
     useEffect(() => {
         const user: UserResponse = getUserDetails();
         if (user) {
+            connectWebSocket(String(getJwt()), onInvite);
             setUserDetails(user);
             getListaEquipes(user.id);
         }
@@ -161,6 +187,7 @@ export default function Equipes() {
                 </div>
             </div>
 
+            <Invite invite={convite!} isVisible={isVisible} onAccept={aceitarConvite} onRecuse={recusarConvite} />
 
             <div className={styles.principal}>
                 <div>

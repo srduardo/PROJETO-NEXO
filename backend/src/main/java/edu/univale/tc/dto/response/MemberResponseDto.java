@@ -10,4 +10,5 @@ public class MemberResponseDto {
     private String memberName;
     private int tasksAmount;
     private int finishedTasksAmount;
+    private String role;
 }

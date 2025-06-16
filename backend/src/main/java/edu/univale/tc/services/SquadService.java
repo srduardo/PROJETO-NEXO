@@ -10,6 +10,8 @@ import edu.univale.tc.dto.request.SquadRequestDto;
 import edu.univale.tc.dto.response.SquadResponseDto;
 import edu.univale.tc.exceptions.ResourceNotFoundException;
 import edu.univale.tc.repositories.SquadRepository;
+import edu.univale.tc.repositories.TaskRepository;
+import jakarta.transaction.Transactional;
 
 @Service
 public class SquadService {
@@ -22,6 +24,9 @@ public class SquadService {
 
     @Autowired
     private CollaborationService collaborationService;
+
+    @Autowired
+    private TaskRepository taskRepository;
 
     public List<SquadResponseDto> findAllSquadsResponse() {
         return squadRepository.findAll().stream().map(SquadResponseDto::new).toList();
@@ -59,10 +64,15 @@ public class SquadService {
         return new SquadResponseDto(updatedSquad);
     }
 
-    public void deleteSquadBySquadIdAndUserId(long squadId, long userId) {
+    @Transactional
+    public void deleteSquadBySquadIdAndUserId(long squadId) {
         if (!squadRepository.existsById(squadId)) throw new ResourceNotFoundException("Equipe não encontrada!");
+        Squad squad = findSquadById(squadId);
+        
+        collaborationService.deleteAllCollaborationsBySquad(squadId);
+        
+        taskRepository.deleteAllBySquadId(squad);
 
-        collaborationService.deleteCollaboration(squadId, userId);
         squadRepository.deleteById(squadId);
     }
 

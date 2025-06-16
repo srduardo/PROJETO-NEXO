@@ -12,6 +12,8 @@ import java.util.List;
 @Repository
 public interface CollaborationRepository extends JpaRepository<Collaboration, Long> {
     void deleteBySquadIdAndUserId(Squad squadId, User userId);
+    void deleteBySquadId(Squad squadId);
     List<Collaboration> findByUserId(User userId);
     List<Collaboration> findBySquadId(Squad squadId);
+    Collaboration findBySquadIdAndUserId(Squad squadId, User userId);
 }

@@ -45,9 +45,9 @@ public class SquadController {
         return ResponseEntity.ok(squadService.updateSquadName(squadId, squadRequestDto));
     }
 
-    @DeleteMapping("/{squadId}/{userId}/delete")
-    public ResponseEntity<Object> deleteSquad(@PathVariable long squadId, @PathVariable long userId) {
-        squadService.deleteSquadBySquadIdAndUserId(squadId, userId);
+    @DeleteMapping("/{squadId}/delete")
+    public ResponseEntity<Object> deleteSquad(@PathVariable long squadId) {
+        squadService.deleteSquadBySquadIdAndUserId(squadId);
         return ResponseEntity.status(204).build();
     }
 }

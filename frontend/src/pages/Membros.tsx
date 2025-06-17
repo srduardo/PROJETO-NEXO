@@ -19,6 +19,8 @@ import { connectWebSocket } from '../services/websocketService';
 import { getJwt, getUserDetails } from '../services/loginService';
 import type { ConviteResponse } from '../types/ConviteResponse';
 import Invite from '../components/invite/Invite';
+import Warn from '../components/warn/Warn';
+import type { ErroResponse } from '../types/ErroResponse';
 
 export default function Membros() {
     const [registros, setRegistros] = useState<Registro[]>();
@@ -28,14 +30,64 @@ export default function Membros() {
     const [emailMembro, setEmailMembro] = useState<string>('');
     const [convite, setConvite] = useState<ConviteResponse>();
     const [isVisible, setIsVisible] = useState<boolean>(false);
+    const [warnView, setWarnView] = useState<boolean>(false);
+    const [isInvited, setIsInvited] = useState<boolean>(false);
 
     const { idEquipe } = useParams();
     const navigate = useNavigate();
 
-    const enviarConvite = async () => {
-        if (!emailMembro) return;
+    const validarEmail = (): boolean => {
+        const regexEmail = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
-        convidar(Number(idEquipe), emailMembro);
+        if (emailMembro === '' || !regexEmail.test(emailMembro)) {
+            setIsInvited(false);
+            setWarnView(true);
+            return true;
+        }
+
+        return false;
+    }
+
+    const validarConvidado = (response: ErroResponse): boolean => {
+        if (response?.code == 404) {
+            setIsInvited(true);
+            setWarnView(true);
+            return true;
+        }
+        return false;
+    }
+
+    const verificarResposta = (response: any): response is ErroResponse => {
+        return (
+            response
+            && typeof response === 'object'
+            && 'code' in response
+            && 'message' in response
+            && 'timestamp' in response
+        );
+    }
+
+    const temporizarAviso = () => {
+        setTimeout(() => {
+            setWarnView(false);
+        }, 3000)
+    }
+
+    const enviarConvite = async () => {
+        if (validarEmail()) {
+            temporizarAviso();
+            return;
+        }
+
+        const response = await convidar(Number(idEquipe), emailMembro);
+
+        if (verificarResposta(response)) {
+            if (validarConvidado(response)) {
+                temporizarAviso();
+                return;
+            }
+        }
+
         setViewInviteBox(false);
         console.log('Convite enviado!');
     }
@@ -155,6 +207,8 @@ export default function Membros() {
                     <Button width={200} margin='0px 0px 30px 0px' height={45} onClick={enviarConvite}>ENVIAR CONVITE</Button>
                 </div>
             </InputBox>
+
+            <Warn type='Email' view={warnView} differentCondition={isInvited} />
         </div>
     );
 }

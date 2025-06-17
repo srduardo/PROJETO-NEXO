@@ -28,16 +28,16 @@ const api = async <T>(endpoint: string, options: RequestOptions = {}): Promise<T
   };
 
   const response = await fetch(`${API_BASE_URL}${endpoint}`, config);
+  
+  if (response.status === 404) return response.json();
 
   if (!response.ok) {
     const errorData = await response.json().catch(() => ({}));
     throw new Error(errorData.message || 'Erro na requisição');
   }
 
-  if (response.status === 204) {
-    return null as T;
-  }
-  
+  if (response.status === 204) return null as T;
+
   return response.json();
 };
 

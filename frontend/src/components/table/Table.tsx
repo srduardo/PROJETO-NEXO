@@ -29,8 +29,17 @@ export default function Table({ values = [], member = null, isTasksOwner = false
                         )}
                         {type === 'equipes' && (
                             <td className={styles.lastText}>
-                                <button onClick={() => onDelete(value.identifier)} style={{ background: "none", border: "none", cursor: "pointer", color: "red" }}><IconTrashFilled /></button>
-                                <button onClick={() => onEdit(value.identifier)} style={{ background: "none", border: "none", cursor: "pointer", color: "#EBC351" }}><IconClipboardTextFilled /></button>
+                                {member?.memberId === value.secondIdentifier ?
+                                    <>
+                                        <button onClick={() => onDelete(value.identifier)} style={{ background: "none", border: "none", cursor: "pointer", color: "red" }}><IconTrashFilled /></button>
+                                        <button onClick={() => onEdit(value.identifier)} style={{ background: "none", border: "none", cursor: "pointer", color: "#EBC351" }}><IconClipboardTextFilled /></button>
+                                    </>
+                                    :
+                                    <>
+                                        <button style={{ background: "none", border: "none", color: "gray" }}><IconTrashFilled /></button>
+                                        <button style={{ background: "none", border: "none", color: "gray" }}><IconClipboardTextFilled /></button>
+                                    </>
+                                }
                             </td>
                         )}
 
@@ -77,11 +86,11 @@ export default function Table({ values = [], member = null, isTasksOwner = false
                         )}
                         {type === 'tarefas' && (
                             <td className={styles.lastText}>
-                                { isTasksOwner  ? 
+                                {isTasksOwner ?
                                     <>
                                         {
                                             value.thirdValue === 'PENDENTE' ?
-                                                <button onClick={() => onChange(value.identifier)} style={{ background: "none", border: "none", cursor: "pointer", color: "gray" }}><IconCircleCheckFilled /></button>
+                                                <button onClick={() => onChange(value.identifier)} style={{ background: "none", border: "none", cursor: "pointer", color: "#7ca87b" }}><IconCircleCheckFilled /></button>
                                                 :
                                                 <button onClick={() => onChange(value.identifier)} style={{ background: "none", border: "none", cursor: "pointer", color: "green" }}><IconCircleCheckFilled /></button>
                                         }

@@ -6,20 +6,44 @@ import Button from '../components/button/Button';
 import { Link, useNavigate } from 'react-router-dom';
 import { cadastrar } from '../services/cadastroService';
 import type { UserResponse } from '../types/UserResponse';
+import Warn from '../components/warn/Warn';
 
 export default function Cadastro() {
     const [username, setUsername] = useState('');
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [confirme, setConfirme] = useState('');
+    const [warnView, setWarnView] = useState<boolean>(false);
+
     const navigate = useNavigate();
 
+    const validar = (): boolean => {
+        const regexEmail = /^[^s@]+@[^s@]+.[^s@]+$/;
+
+        if (username === '' || email === '' || password === '' || confirme === '' || regexEmail.test(email) || password.length < 6) {
+            setWarnView(true);
+            return true;
+        }
+
+        if (password !== confirme) {
+            setWarnView(true);
+            return true;
+        }
+
+        return false;
+    }
+
     const handleCadastro = async () => {
-        if (username === null || email === null || password === null || confirme === null) return;
+        if (validar()) {
+            setTimeout(() => {
+                setWarnView(false);
+            }, 3000)
+            return;
+        }
 
         if (password !== confirme) return;
 
-        const dados: UserResponse | string = await cadastrar({username, email, password});
+        const dados: UserResponse | string = await cadastrar({ username, email, password });
         if (dados) navigate("/");
     };
 
@@ -40,6 +64,8 @@ export default function Cadastro() {
                 <Button width={200} margin={15} height={45} color='#EBC351' mouseDownColor='#AD903E' onClick={handleCadastro}>REGISTRAR</Button>
                 <Link to='/' className={styles.link}>Conecte-se</Link>
             </div>
+
+            <Warn type='Credenciais' view={warnView} />
         </div>
     );
 };

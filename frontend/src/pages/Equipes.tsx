@@ -22,6 +22,8 @@ import Invite from '../components/invite/Invite';
 import type { ConviteResponse } from '../types/ConviteResponse';
 import { aceitar } from '../services/conviteService';
 import { connectWebSocket } from '../services/websocketService';
+import type { MembroResponse } from '../types/MembroResponse';
+import Warn from '../components/warn/Warn';
 
 
 export default function Equipes() {
@@ -36,11 +38,42 @@ export default function Equipes() {
     const [viewEditBox, setViewEditBox] = useState<boolean>(false);
     const [isVisible, setIsVisible] = useState<boolean>(false);
     const [convite, setConvite] = useState<ConviteResponse>();
+    const [warnView, setWarnView] = useState<boolean>(false);
+
 
     const navigate = useNavigate();
 
+    const temporizarAviso = () => {
+        setTimeout(() => {
+            setWarnView(false);
+        }, 3000)
+    }
+
+    const validar = (param: string): boolean => {
+        if (param === 'usuario') {
+            if (novoNomeUsuario === '') {
+                setWarnView(true);
+                return true;
+            }
+        }
+
+        if (param === 'equipe') {
+            if (novaEquipe === '') {
+                setWarnView(true);
+                return true;
+            }
+        }
+
+        return false;
+    }
+
     const editarPerfil = async () => {
         let nomeAtualizado: string | null = null;
+
+        if (validar('usuario')) {
+            temporizarAviso();
+            return;
+        }
 
         if (userDetails && novoNomeUsuario) {
             const novoNomeJson: UserRequest = { username: novoNomeUsuario, email: 'email@gmail.com', password: 'password' }
@@ -66,16 +99,20 @@ export default function Equipes() {
 
     const getListaEquipes = async (userId: number) => {
         const listaEquipes: EquipeResponse[] = await getEquipes(userId);
-        const listaRegistros: Registro[] = listaEquipes.map((e) => { return { identifier: e.squadId, secondIdentifier: null, name: e.squadName, secondValue: e.ownerName, thirdValue: e.membersAmount, fourthValue: null } });
+        const listaRegistros: Registro[] = listaEquipes.map((e) => { return { identifier: e.squadId, secondIdentifier: e.ownerId, name: e.squadName, secondValue: e.ownerName, thirdValue: e.membersAmount, fourthValue: null } });
         setRegistros(listaRegistros);
         console.log(listaRegistros);
     }
 
     const criarNovaEquipe = async () => {
-        console.log('Aqui!')
+        if (validar('equipe')) {
+            temporizarAviso();
+            return;
+        }
+
         if (novaEquipe && userDetails) {
             const equipeResponse: EquipeResponse = await criarEquipe(userDetails.id, novaEquipe);
-            const registro: Registro = { identifier: equipeResponse.squadId, secondIdentifier: null, name: equipeResponse.squadName, secondValue: equipeResponse.ownerName, thirdValue: equipeResponse.membersAmount, fourthValue: null };
+            const registro: Registro = { identifier: equipeResponse.squadId, secondIdentifier: equipeResponse.ownerId, name: equipeResponse.squadName, secondValue: equipeResponse.ownerName, thirdValue: equipeResponse.membersAmount, fourthValue: null };
 
             if (registros) {
                 registros.push(registro);
@@ -95,21 +132,21 @@ export default function Equipes() {
     const editarNomeEquipe = async () => {
         if (registros) {
             for (let i = 0; i < registros.length; i++) {
-                if (registros[i].identifier == idEquipeEditando) {
-                    if (userDetails) {
-                        if (novoNomeEquipe === null || novoNomeEquipe === '') {
-                            return;
-                        }
-                        const dados: EquipeRequest = { id: registros[i].identifier, name: novoNomeEquipe }
-                        const equipeEditada: EquipeResponse = await editarEquipe(idEquipeEditando, dados);
-
-                        const listaEquipes: Registro[] = registros.filter((e) => e.identifier !== idEquipeEditando);
-                        listaEquipes.push({ identifier: equipeEditada.squadId, secondIdentifier: null, name: equipeEditada.squadName, secondValue: equipeEditada.ownerName, thirdValue: equipeEditada.membersAmount, fourthValue: null });
-
-                        setRegistros(listaEquipes);
-                        setViewEditBox(false);
-                        setNovoNomeEquipe('');
+                if (registros[i].identifier == idEquipeEditando && userDetails) {
+                    if (validar('equipe')) {
+                        temporizarAviso();
+                        return;
                     }
+
+                    const dados: EquipeRequest = { id: registros[i].identifier, name: novoNomeEquipe }
+                    const equipeEditada: EquipeResponse = await editarEquipe(idEquipeEditando, dados);
+
+                    const listaEquipes: Registro[] = registros.filter((e) => e.identifier !== idEquipeEditando);
+                    listaEquipes.push({ identifier: equipeEditada.squadId, secondIdentifier: equipeEditada.ownerId, name: equipeEditada.squadName, secondValue: equipeEditada.ownerName, thirdValue: equipeEditada.membersAmount, fourthValue: null });
+
+                    setRegistros(listaEquipes);
+                    setViewEditBox(false);
+                    setNovoNomeEquipe('');
                 }
             }
         }
@@ -163,6 +200,11 @@ export default function Equipes() {
         setIsVisible(false);
     }
 
+    const usuarioParaMembro = (): MembroResponse => {
+        const usuario: UserResponse = getUserDetails();
+        return { memberId: usuario.id, memberName: usuario.username, finishedTasksAmount: 0, tasksAmount: 0, role: 'N/a' };
+    }
+
     useEffect(() => {
         const user: UserResponse = getUserDetails();
         if (user) {
@@ -194,7 +236,7 @@ export default function Equipes() {
                     <Text size={30}>Bem-vindo, {userDetails?.username}!</Text>
                 </div>
                 <div>
-                    <TableContainer><Table values={registros} onDelete={deletarEquipe} onEdit={showEditBox} onAcessOneArg={acessarMembros} type='equipes' column1='NOME DA EQUIPE' column2='LÍDER DA EQUIPE' column3='QUANTIDADE DE MEMBROS' column4='AÇÕES'></Table></TableContainer>
+                    <TableContainer><Table values={registros} member={usuarioParaMembro()} onDelete={deletarEquipe} onEdit={showEditBox} onAcessOneArg={acessarMembros} type='equipes' column1='NOME DA EQUIPE' column2='LÍDER DA EQUIPE' column3='QUANTIDADE DE MEMBROS' column4='AÇÕES'></Table></TableContainer>
                 </div>
             </div>
 
@@ -234,6 +276,8 @@ export default function Equipes() {
                     <Button width={200} color='#EB5151' margin='0px 0px 30px 10px' height={45} onClick={deletarPerfil}>DELETAR PERFIL</Button>
                 </div>
             </InputBox>
+
+            <Warn type='Nome' view={warnView} />
         </div>
     );
 }

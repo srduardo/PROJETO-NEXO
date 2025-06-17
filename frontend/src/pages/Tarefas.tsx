@@ -17,6 +17,7 @@ import type { MembroResponse } from '../types/MembroResponse';
 import { getMembro } from '../services/membroService';
 import { getUserDetails } from '../services/loginService';
 import { getLider } from '../services/equipeService';
+import Warn from '../components/warn/Warn';
 
 export default function Tarefas() {
     const [registros, setRegistros] = useState<Registro[]>([]);
@@ -30,34 +31,63 @@ export default function Tarefas() {
     const [viewEditBox, setViewEditBox] = useState<boolean>(false);
     const [atualizarStatus, setAtualizarStatus] = useState<boolean>(true);
     const [idTarefaEditando, setIdTarefaEditando] = useState<number>();
+    const [warnView, setWarnView] = useState<boolean>(false);
+    const [descricaoLonga, setDescricaoLonga] = useState<boolean>(false);
+
 
     const { idMembro, idEquipe } = useParams();
     const navigate = useNavigate();
 
+    const temporizarAviso = () => {
+        setTimeout(() => {
+            setWarnView(false);
+        }, 3000)
+    }
+
+    const validar = (): boolean => {
+        if (descricaoTarefa.length > 300) {
+            setDescricaoLonga(true);
+            setWarnView(true);
+            return true;
+        } else {
+            setDescricaoLonga(false);
+        }
+
+        if (nomeTarefa === '' || descricaoTarefa === '') {
+            setWarnView(true);
+            return true;
+        }
+
+        return false;
+    }
+
     const criarNovaTarefa = async () => {
         if (registros.length >= 10) return;
 
-        if (nomeTarefa && descricaoTarefa) {
-            const tarefa: TarefaRequest = { title: nomeTarefa, description: descricaoTarefa, status: 'PENDENTE' };
-            const tarefaCriada: TarefaResponse = await criarTarefa(Number(idMembro), Number(idEquipe), tarefa);
-            const registro: Registro = { identifier: tarefaCriada.id, secondIdentifier: Number(idEquipe), name: tarefaCriada.title, secondValue: tarefaCriada.description, thirdValue: tarefaCriada.status, fourthValue: null };
-            if (registros) {
-                setRegistros([...registros, registro]);
-                setViewTaskBox(false);
-                // setAtualizar(true);
-                setNomeTarefa('');
-                setDescricaoTarefa('');
-                return;
-            } else {
-                const novaListaRegistros: Registro[] = [registro];
-                setRegistros(novaListaRegistros);
-                setViewTaskBox(false);
-                setNomeTarefa('');
-                setDescricaoTarefa('');
-            }
-        } else {
+        if (validar()) {
+            temporizarAviso();
             return;
         }
+
+        const tarefa: TarefaRequest = { title: nomeTarefa, description: descricaoTarefa, status: 'PENDENTE' };
+        const tarefaCriada: TarefaResponse = await criarTarefa(Number(idMembro), Number(idEquipe), tarefa);
+        const registro: Registro = { identifier: tarefaCriada.id, secondIdentifier: Number(idEquipe), name: tarefaCriada.title, secondValue: tarefaCriada.description, thirdValue: tarefaCriada.status, fourthValue: null };
+
+        if (registros) {
+            setRegistros([...registros, registro]);
+            setViewTaskBox(false);
+            // setAtualizar(true);
+            setNomeTarefa('');
+            setDescricaoTarefa('');
+            return;
+        } else {
+            const novaListaRegistros: Registro[] = [registro];
+            setRegistros(novaListaRegistros);
+            setViewTaskBox(false);
+            setNomeTarefa('');
+            setDescricaoTarefa('');
+        }
+
     }
 
     const deletarTarefa = async (idTarefa: string | number) => {
@@ -94,7 +124,12 @@ export default function Tarefas() {
     }
 
     const editarTarefa = async () => {
-        if (registros && nomeTarefa && descricaoTarefa) {
+        if (validar()) {
+            temporizarAviso();
+            return;
+        }
+
+        if (registros) {
             for (let i = 0; i < registros.length; i++) {
                 if (registros[i].identifier == idTarefaEditando) {
                     const tarefa: TarefaRequest = { title: nomeTarefa, description: descricaoTarefa, status: String(registros[i].thirdValue) };
@@ -200,6 +235,8 @@ export default function Tarefas() {
                     </div>
                 </div>
             </InputBox>
+
+            <Warn type='Dados' view={warnView} differentCondition={descricaoLonga} descriptionLength={descricaoTarefa.length} />
         </div>
     );
 }

@@ -13,12 +13,9 @@ import java.time.LocalDateTime;
 public class GlobalExceptionHandler {
 
     @ExceptionHandler({ ResourceNotFoundException.class })
-    public ResponseEntity<ResponseError> handleResourceNotFoundException(Exception ex, WebRequest request) {
-        return new ResponseEntity<>(
-                new ResponseError(HttpStatus.NOT_FOUND.value(), ex.getMessage(), LocalDateTime.now()),
-                new HttpHeaders(),
-                HttpStatus.NOT_FOUND
-        );
+    public ResponseEntity<ResponseError> handleResourceNotFoundException(ResourceNotFoundException ex, WebRequest request) {
+        ResponseError error = new ResponseError(HttpStatus.NOT_FOUND.value(), ex.getMessage(), LocalDateTime.now());
+        return ResponseEntity.status(404).body(error);
     }
 
     @ExceptionHandler({ EmailAlreadyExistsException.class })

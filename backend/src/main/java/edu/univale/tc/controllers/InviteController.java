@@ -20,7 +20,7 @@ public class InviteController {
     @Autowired
     private InviteService inviteService;
 
-    @PostMapping
+    @PostMapping("/send")
     public ResponseEntity<Object> inviteUser(@RequestBody InviteRequestDto inviteRequestDto, @RequestHeader(name = "Authorization") String auth) {
         inviteService.createInvite(inviteRequestDto, auth);
         return ResponseEntity.status(204).build();
@@ -31,7 +31,4 @@ public class InviteController {
         inviteService.acceptInvite(acceptRequestDto, auth);
         return ResponseEntity.status(204).build();
     }
-    
-    
-
 }

@@ -78,6 +78,7 @@ public class CollaborationService {
 
         List<SquadResponseDto> squadResponseDtos = foundedCollaborations.stream()
                 .map((c) -> new SquadResponseDto(c.getSquadId().getId(), c.getSquadId().getName(),
+                        c.getSquadId().getOwnerId().getId(),
                         c.getSquadId().getOwnerId().getUsername(),
                         c.getSquadId().getCollaboration().size()))
                 .toList();

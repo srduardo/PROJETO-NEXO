@@ -30,11 +30,13 @@ public class InviteService {
 
     public void createInvite(InviteRequestDto inviteRequestDto, String auth) {
         if (inviteRequestDto == null || auth == null) throw new IllegalArgumentException("Erro ao enviar convite!");
-
+        System.out.println("Log");
+        userService.findUserByEmail(inviteRequestDto.getReceiverEmail());
         User sender = getUserByJwt(auth);
         
         Squad squad = squadService.findSquadById(inviteRequestDto.getSquadId());
         InviteResponseDto inviteResponse = new InviteResponseDto(sender.getUsername(), squad.getName(), squad.getId());
+        System.out.println("Log 2");
         webSocketService.sendInvite(inviteRequestDto.getReceiverEmail(), inviteResponse);
     }
 

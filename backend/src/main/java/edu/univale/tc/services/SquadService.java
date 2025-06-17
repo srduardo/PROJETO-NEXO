@@ -50,7 +50,7 @@ public class SquadService {
 
         collaborationService.createNewCollaboration(userId, newSquad.getId(), "OWNER");
 
-        return new SquadResponseDto(newSquad.getId(), newSquad.getName(), newSquad.getOwnerId().getUsername(), 1);
+        return new SquadResponseDto(newSquad.getId(), newSquad.getName(), user.getId(), newSquad.getOwnerId().getUsername(), 1);
     }
 
     public SquadResponseDto updateSquadName(long id, SquadRequestDto squadRequestDto) {        

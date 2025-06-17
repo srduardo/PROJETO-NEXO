@@ -9,12 +9,14 @@ import lombok.Data;
 public class SquadResponseDto {
     private long squadId;
     private String squadName;
+    private long ownerId;
     private String ownerName;
     private int membersAmount;
 
     public SquadResponseDto(Squad squad) {
         this.squadId = squad.getId();
         this.squadName = squad.getName();
+        this.ownerId = squad.getOwnerId().getId();
         this.ownerName = squad.getOwnerId().getUsername();
         this.membersAmount = squad.getCollaboration().size();
     }

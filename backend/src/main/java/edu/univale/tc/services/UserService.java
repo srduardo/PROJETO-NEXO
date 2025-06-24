@@ -109,8 +109,9 @@ public class UserService {
         Authentication authentication = authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(userRequestDto.getEmail(), userRequestDto.getPassword()));
 
-        if (!authentication.isAuthenticated())
+        if (!authentication.isAuthenticated()) {
             throw new InvalidCredentialsException("Authenticação inválida");
+        }
         User user = findUserByEmail(userRequestDto.getEmail());
 
         return new UserResponseDto(user, jwtService.generateToken(user.getEmail()));

@@ -66,4 +66,6 @@
     margin-left: 10px;
     margin-right: 10px;
     border-spacing: 0 12px;
+    overflow-x: auto;
+
 }

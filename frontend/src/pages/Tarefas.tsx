@@ -15,13 +15,16 @@ import type { TarefaResponse } from '../types/TarefaResponse';
 import type { Registro } from '../types/Registro';
 import type { MembroResponse } from '../types/MembroResponse';
 import { getMembro } from '../services/membroService';
-import { getUserDetails } from '../services/loginService';
+import { getJwt, getUserDetails } from '../services/loginService';
 import { getLider } from '../services/equipeService';
 import Warn from '../components/warn/Warn';
+import type { ConviteResponse } from '../types/ConviteResponse';
+import { aceitar } from '../services/conviteService';
+import { connectWebSocket } from '../services/websocketService';
+import Invite from '../components/invite/Invite';
 
 export default function Tarefas() {
     const [registros, setRegistros] = useState<Registro[]>([]);
-    // const [userDetails, setUserDetails] = useState<UserResponse>();
     const [membro, setMembro] = useState<MembroResponse>();
     const [lider, setLider] = useState<MembroResponse>();
     const [donoTarefas, setDonoTarefas] = useState<boolean>();
@@ -33,7 +36,8 @@ export default function Tarefas() {
     const [idTarefaEditando, setIdTarefaEditando] = useState<number>();
     const [warnView, setWarnView] = useState<boolean>(false);
     const [descricaoLonga, setDescricaoLonga] = useState<boolean>(false);
-
+    const [isVisible, setIsVisible] = useState<boolean>(false);
+    const [convite, setConvite] = useState<ConviteResponse>();
 
     const { idMembro, idEquipe } = useParams();
     const navigate = useNavigate();
@@ -76,7 +80,6 @@ export default function Tarefas() {
         if (registros) {
             setRegistros([...registros, registro]);
             setViewTaskBox(false);
-            // setAtualizar(true);
             setNomeTarefa('');
             setDescricaoTarefa('');
             return;
@@ -160,6 +163,23 @@ export default function Tarefas() {
         navigate(`/equipes/${idEquipe}/membros`);
     }
 
+    const onInvite = (dadosConvite: ConviteResponse) => {
+        if (dadosConvite) {
+            setConvite(dadosConvite);
+            setIsVisible(true);
+        }
+    }
+
+    const aceitarConvite = () => {
+        if (convite?.squadId) {
+            aceitar(convite?.squadId);
+            setIsVisible(false);
+            navigate(`/equipes/${convite.squadId}/membros`);
+        }
+    }
+
+    const recusarConvite = () => setIsVisible(false);
+
     useEffect(() => {
         if (idEquipe && idMembro) {
             const getDados = async () => {
@@ -175,6 +195,8 @@ export default function Tarefas() {
 
                 const perm: boolean = membroAtual?.memberId === getUserDetails().id || liderAtual?.memberId === getUserDetails().id;
                 setDonoTarefas(perm);
+
+                connectWebSocket(String(getJwt()), onInvite);
             }
 
             getDados();
@@ -199,6 +221,8 @@ export default function Tarefas() {
                 </div>
             </div>
 
+            <Invite invite={convite!} isVisible={isVisible} onAccept={aceitarConvite} onRecuse={recusarConvite} />
+
             <div className={styles.principal}>
                 <div>
                     <Text size={30}>{membro?.memberName}</Text>
@@ -208,30 +232,30 @@ export default function Tarefas() {
                 </div>
             </div>
 
-            <InputBox view={viewTaskBox} width='100vh' height='auto'>
-                <div style={{ display: 'flex', flexDirection: 'row', justifyContent: 'space-between', marginRight: 30, marginLeft: 30 }}>
-                    <Text size={30} color='#EBC351' weight='bold'>CRIANDO UMA NOVA TAREFA...</Text>
-                    <button style={{ color: 'white', background: 'none', borderStyle: 'none', fontSize: 30, cursor: 'pointer' }} onClick={() => setViewTaskBox(false)}><XIcon /></button>
+            <InputBox view={viewTaskBox} width='80vmin' height='auto'>
+                <div style={{ display: 'flex', flexDirection: 'row', justifyContent: 'space-between', marginRight: 10, marginLeft: 10 }}>
+                    <Text size={'4.4vmin'} color='#EBC351' weight='bold'>CRIANDO UMA NOVA TAREFA...</Text>
+                    <button style={{ color: 'white', background: 'none', borderStyle: 'none', fontSize: '0.5vmin', cursor: 'pointer' }} onClick={() => setViewTaskBox(false)}><XIcon /></button>
                 </div>
-                <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'space-between', marginRight: 30, marginLeft: 30, marginTop: 15 }}>
-                    <Input type='text' width={630} margin='0px 0px 30px 0px' placeholder='Nome da tarefa' value={nomeTarefa} onChange={(e) => setNomeTarefa(e.target.value)}></Input>
+                <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'space-between', marginRight: 10, marginLeft: 10, marginTop: 15 }}>
+                    <Input type='text' width={'50vmin'} margin='0px 0px 30px 0px' placeholder='Nome da tarefa' value={nomeTarefa} onChange={(e) => setNomeTarefa(e.target.value)}></Input>
                     <div style={{ display: 'flex', flexDirection: 'row', justifyContent: 'space-between' }}>
-                        <Input type='text' width={630} margin='0px 0px 30px 0px' placeholder='Descrição da tarefa' value={descricaoTarefa} onChange={(e) => setDescricaoTarefa(e.target.value)}></Input>
-                        <Button width={200} margin='0px 0px 30px 0px' height={45} onClick={criarNovaTarefa}>CRIAR TAREFA</Button>
+                        <Input type='text' width={'50vmin'} margin='0px 0px 30px 0px' placeholder='Descrição da tarefa' value={descricaoTarefa} onChange={(e) => setDescricaoTarefa(e.target.value)}></Input>
+                        <Button width={'23vmin'} margin='0px 0px 30px 0px' height={45} onClick={criarNovaTarefa}>CRIAR</Button>
                     </div>
                 </div>
             </InputBox>
 
-            <InputBox view={viewEditBox} width='100vh' height='auto'>
-                <div style={{ display: 'flex', flexDirection: 'row', justifyContent: 'space-between', marginRight: 30, marginLeft: 30 }}>
-                    <Text size={30} color='#EBC351' weight='bold'>EDITANDO TAREFA...</Text>
-                    <button style={{ color: 'white', background: 'none', borderStyle: 'none', fontSize: 30, cursor: 'pointer' }} onClick={() => setViewEditBox(false)}><XIcon /></button>
+            <InputBox view={viewEditBox} width='80vmin' height='auto'>
+                <div style={{ display: 'flex', flexDirection: 'row', justifyContent: 'space-between', marginRight: 10, marginLeft: 10 }}>
+                    <Text size={'4.4vmin'} color='#EBC351' weight='bold'>EDITANDO TAREFA...</Text>
+                    <button style={{ color: 'white', background: 'none', borderStyle: 'none', fontSize: '0.5em', cursor: 'pointer' }} onClick={() => setViewEditBox(false)}><XIcon /></button>
                 </div>
-                <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'space-between', marginRight: 30, marginLeft: 30, marginTop: 15 }}>
-                    <Input type='text' width={630} margin='0px 0px 30px 0px' placeholder='Novo nome da tarefa' value={nomeTarefa} onChange={(e) => setNomeTarefa(e.target.value)}></Input>
+                <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'space-between', marginRight: 10, marginLeft: 10, marginTop: 15 }}>
+                    <Input type='text' width={'50vmin'} margin='0px 0px 30px 0px' placeholder='Novo nome da tarefa' value={nomeTarefa} onChange={(e) => setNomeTarefa(e.target.value)}></Input>
                     <div style={{ display: 'flex', flexDirection: 'row', justifyContent: 'space-between' }}>
-                        <Input type='text' width={630} margin='0px 0px 30px 0px' placeholder='Nova descrição da tarefa' value={descricaoTarefa} onChange={(e) => setDescricaoTarefa(e.target.value)}></Input>
-                        <Button width={200} margin='0px 0px 30px 0px' height={45} onClick={editarTarefa}>EDITAR TAREFA</Button>
+                        <Input type='text' width={'50vmin'} margin='0px 0px 30px 0px' placeholder='Nova descrição da tarefa' value={descricaoTarefa} onChange={(e) => setDescricaoTarefa(e.target.value)}></Input>
+                        <Button width={'23vmin'} margin='0px 0px 30px 0px' height={45} onClick={editarTarefa}>EDITAR</Button>
                     </div>
                 </div>
             </InputBox>

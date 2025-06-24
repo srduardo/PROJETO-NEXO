@@ -15,8 +15,8 @@ export default function Login() {
     const navigate = useNavigate();
 
     const validar = (): boolean => {
-        const regexEmail = /^[^s@]+@[^s@]+.[^s@]+$/;
-        if (email === '' || password === '' || regexEmail.test(email)) {
+        const regexEmail = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (email === '' || password === '' || !regexEmail.test(email)) {
             setWarnView(true);
             return true;
         }
@@ -25,11 +25,12 @@ export default function Login() {
 
     const handleLogin = async () => {
         if (validar()) {
-            setTimeout(()=>{
+            setTimeout(() => {
                 setWarnView(false);
             }, 3000)
             return;
-        };
+        }
+
         const username: string = "Usuário";
         const dados: UserResponse = await logar({ username, email, password });
         console.log(dados);
@@ -48,13 +49,13 @@ export default function Login() {
 
             <div className={styles.right}>
                 <h1>JUNTE-SE A SUA EQUIPE!</h1>
-                <Input type='email' width={400} margin={15} placeholder='Insira seu email' value={email} onChange={(e) => setEmail(e.target.value)}></Input>
-                <Input type='password' width={400} margin={15} placeholder='Insira sua senha' value={password} onChange={(e) => setPassword(e.target.value)}></Input >
+                <Input type='email' width={'57vmin'} margin={15} placeholder='Insira seu email' value={email} onChange={(e) => setEmail(e.target.value)}></Input>
+                <Input type='password' width={'57vmin'} margin={15} placeholder='Insira sua senha' value={password} onChange={(e) => setPassword(e.target.value)}></Input >
                 <Button width={200} margin={15} height={45} color='#EBC351' mouseDownColor='#AD903E' onClick={handleLogin}>CONECTAR</Button>
                 <Link to={'/cadastro'} className={styles.link}>Cadastre-se</Link>
             </div>
 
-            <Warn type='Credenciais' view={warnView}/>
+            <Warn type='Credenciais' view={warnView} />
         </div>
     );
 };

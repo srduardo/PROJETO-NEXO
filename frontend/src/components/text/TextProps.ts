@@ -1,5 +1,5 @@
 export type TextProps = {
-    size: number,
+    size: number | string,
     color?: string,
     weight?: string,
     children: React.ReactNode

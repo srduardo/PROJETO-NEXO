@@ -28,6 +28,7 @@ const api = async <T>(endpoint: string, options: RequestOptions = {}): Promise<T
   };
 
   const response = await fetch(`${API_BASE_URL}${endpoint}`, config);
+  console.log(response.status);
   
   if (response.status === 404) return response.json();
 

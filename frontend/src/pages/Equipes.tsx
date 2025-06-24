@@ -25,7 +25,6 @@ import { connectWebSocket } from '../services/websocketService';
 import type { MembroResponse } from '../types/MembroResponse';
 import Warn from '../components/warn/Warn';
 
-
 export default function Equipes() {
     const [userDetails, setUserDetails] = useState<UserResponse>();
     const [registros, setRegistros] = useState<Registro[]>();
@@ -40,7 +39,6 @@ export default function Equipes() {
     const [convite, setConvite] = useState<ConviteResponse>();
     const [warnView, setWarnView] = useState<boolean>(false);
 
-
     const navigate = useNavigate();
 
     const temporizarAviso = () => {
@@ -51,7 +49,7 @@ export default function Equipes() {
 
     const validar = (param: string): boolean => {
         if (param === 'usuario') {
-            if (novoNomeUsuario === '') {
+            if (!novoNomeUsuario) {
                 setWarnView(true);
                 return true;
             }
@@ -80,6 +78,7 @@ export default function Equipes() {
             const result: UserResponse = await alterarNome(userDetails.id, novoNomeJson);
             nomeAtualizado = result.username;
             setViewProfileBox(false);
+            setNovoNomeUsuario('');
         }
 
         if (nomeAtualizado && userDetails) {
@@ -118,6 +117,7 @@ export default function Equipes() {
                 registros.push(registro);
                 setRegistros(registros);
                 setViewSquadBox(false);
+                setNovaEquipe('');
                 return;
             } else {
                 const novaListaRegistros: Registro[] = [registro];
@@ -196,9 +196,7 @@ export default function Equipes() {
         }
     }
 
-    const recusarConvite = () => {
-        setIsVisible(false);
-    }
+    const recusarConvite = () => setIsVisible(false);
 
     const usuarioParaMembro = (): MembroResponse => {
         const usuario: UserResponse = getUserDetails();
@@ -223,9 +221,9 @@ export default function Equipes() {
                 </div>
 
                 <div className={styles.buttonContainer}>
-                    <Button width={200} margin={15} height={45} onClick={() => setViewProfileBox(true)}>VER PERFIL</Button>
-                    <Button width={200} margin={15} height={45} onClick={() => setViewSquadBox(true)}>NOVA EQUIPE</Button>
-                    <Button width={200} margin={15} height={45} color='#EB5151' mouseDownColor='#B23B3B' onClick={desconectar}>DESCONECTAR</Button>
+                    <Button width={200} margin={10} height={45} onClick={() => setViewProfileBox(true)}>VER PERFIL</Button>
+                    <Button width={200} margin={10} height={45} onClick={() => setViewSquadBox(true)}>NOVA EQUIPE</Button>
+                    <Button width={200} margin={10} height={45} color='#EB5151' mouseDownColor='#B23B3B' onClick={desconectar}>SAIR</Button>
                 </div>
             </div>
 
@@ -240,44 +238,44 @@ export default function Equipes() {
                 </div>
             </div>
 
-            <InputBox view={viewSquadBox} width='100vh' height='auto'>
-                <div style={{ display: 'flex', flexDirection: 'row', justifyContent: 'space-between', marginRight: 30, marginLeft: 30 }}>
-                    <Text size={30} color='#EBC351' weight='bold'>CRIANDO UMA NOVA EQUIPE...</Text>
-                    <button style={{ color: 'white', background: 'none', borderStyle: 'none', fontSize: 30, cursor: 'pointer' }} onClick={() => setViewSquadBox(false)}><XIcon></XIcon></button>
+            <InputBox view={viewSquadBox} width='80vmin' height='auto'>
+                <div style={{ display: 'flex', flexDirection: 'row', justifyContent: 'space-between', marginRight: 10, marginLeft: 10 }}>
+                    <Text size={'4.4vmin'} color='#EBC351' weight='bold'>CRIANDO UMA NOVA EQUIPE...</Text>
+                    <button style={{ color: 'white', background: 'none', borderStyle: 'none', fontSize: '0.5em', cursor: 'pointer' }} onClick={() => setViewSquadBox(false)}><XIcon></XIcon></button>
                 </div>
-                <div style={{ display: 'flex', flexDirection: 'row', justifyContent: 'space-between', marginRight: 30, marginLeft: 30, marginTop: 15 }}>
-                    <Input type='text' width={630} margin='0px 0px 30px 0px' placeholder='Nome da equipe' value={novaEquipe} onChange={(e) => setNovaEquipe(e.target.value)}></Input>
-                    <Button width={200} margin='0px 0px 30px 0px' height={45} onClick={criarNovaEquipe}>CRIAR EQUIPE</Button>
-                </div>
-            </InputBox>
-
-            <InputBox view={viewEditBox} width='100vh' height='auto'>
-                <div style={{ display: 'flex', flexDirection: 'row', justifyContent: 'space-between', marginRight: 30, marginLeft: 30 }}>
-                    <Text size={30} color='#EBC351' weight='bold'>EDITANDO EQUIPE...</Text>
-                    <button style={{ color: 'white', background: 'none', borderStyle: 'none', fontSize: 30, cursor: 'pointer' }} onClick={() => setViewEditBox(false)}><XIcon></XIcon></button>
-                </div>
-                <div style={{ display: 'flex', flexDirection: 'row', justifyContent: 'space-between', marginRight: 30, marginLeft: 30, marginTop: 15 }}>
-                    <Input type='text' width={630} margin='0px 0px 30px 0px' placeholder='Novo nome da equipe' value={novoNomeEquipe} onChange={(e) => setNovoNomeEquipe(e.target.value)}></Input>
-                    <Button width={200} margin='0px 0px 30px 0px' height={45} onClick={editarNomeEquipe}>EDITAR NOME</Button>
+                <div style={{ display: 'flex', flexDirection: 'row', justifyContent: 'space-between', marginRight: 10, marginLeft: 10, marginTop: 15 }}>
+                    <Input type='text' width={'50vmin'} margin='0px 0px 30px 0px' placeholder='Nome da equipe' value={novaEquipe} onChange={(e) => setNovaEquipe(e.target.value)}></Input>
+                    <Button width={'23vmin'} margin='0px 0px 30px 0px' height={45} onClick={criarNovaEquipe}>CRIAR</Button>
                 </div>
             </InputBox>
 
-            <InputBox view={viewProfileBox} width='55vh' height='auto'>
-                <div style={{ display: 'flex', flexDirection: 'row', justifyContent: 'space-between', marginRight: 30, marginLeft: 30 }}>
-                    <Text size={30} color='#EBC351' weight='bold'>SEU PERFIL DE USUÁRIO.</Text>
-                    <button style={{ color: 'white', background: 'none', borderStyle: 'none', fontSize: 30, cursor: 'pointer' }} onClick={() => setViewProfileBox(false)}><XIcon></XIcon></button>
+            <InputBox view={viewEditBox} width='80vmin' height='auto'>
+                <div style={{ display: 'flex', flexDirection: 'row', justifyContent: 'space-between', marginRight: 10, marginLeft: 10 }}>
+                    <Text size={'4.4vmin'} color='#EBC351' weight='bold'>EDITANDO EQUIPE...</Text>
+                    <button style={{ color: 'white', background: 'none', borderStyle: 'none', fontSize: '0.5em', cursor: 'pointer' }} onClick={() => setViewEditBox(false)}><XIcon></XIcon></button>
                 </div>
-                <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'space-between', marginRight: 30, marginLeft: 30, marginTop: 15 }}>
+                <div style={{ display: 'flex', flexDirection: 'row', justifyContent: 'space-between', marginRight: 10, marginLeft: 10, marginTop: 15 }}>
+                    <Input type='text' width={'50vmin'} margin='0px 0px 30px 0px' placeholder='Novo nome da equipe' value={novoNomeEquipe} onChange={(e) => setNovoNomeEquipe(e.target.value)}></Input>
+                    <Button width={'23vmin'} margin='0px 0px 30px 0px' height={45} onClick={editarNomeEquipe}>EDITAR</Button>
+                </div>
+            </InputBox>
+
+            <InputBox view={viewProfileBox} width='80vmin' height='auto'>
+                <div style={{ display: 'flex', flexDirection: 'row', justifyContent: 'space-between', marginRight: 10, marginLeft: 10 }}>
+                    <Text size={'4.4vmin'} color='#EBC351' weight='bold'>SEU PERFIL DE USUÁRIO.</Text>
+                    <button style={{ color: 'white', background: 'none', borderStyle: 'none', fontSize: '0.5em', cursor: 'pointer' }} onClick={() => setViewProfileBox(false)}><XIcon></XIcon></button>
+                </div>
+                <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'space-between', marginRight: 10, marginLeft: 10, marginTop: 15 }}>
                     <Input type='text' width='auto' margin='0px 0px 30px 0px' placeholder={userDetails?.username} value={novoNomeUsuario} onChange={(e) => setNovoNomeUsuario(e.target.value)}></Input>
                     <TextBox margin='0px 0px 30px 0px' value={userDetails?.email} width='auto'></TextBox>
                 </div>
-                <div style={{ display: 'flex', flexDirection: 'row', justifyContent: 'space-between', marginRight: 30, marginLeft: 30, marginTop: 15 }}>
-                    <Button width={200} margin='0px 10px 30px 0px' height={45} onClick={editarPerfil}>APLICAR</Button>
-                    <Button width={200} color='#EB5151' margin='0px 0px 30px 10px' height={45} onClick={deletarPerfil}>DELETAR PERFIL</Button>
+                <div style={{ display: 'flex', flexDirection: 'row', justifyContent: 'space-between', marginRight: 10, marginLeft: 10, marginTop: 15 }}>
+                    <Button width={'35vmin'} margin='0px 10px 30px 0px' height={45} onClick={editarPerfil}>APLICAR</Button>
+                    <Button width={'35vmin'} color='#EB5151' margin='0px 0px 30px 10px' height={45} onClick={deletarPerfil}>DELETAR</Button>
                 </div>
             </InputBox>
 
-            <Warn type='Nome' view={warnView} />
+            <Warn type='Nome' view={warnView}/>
         </div>
     );
 }

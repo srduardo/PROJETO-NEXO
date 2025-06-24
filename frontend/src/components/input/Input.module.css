@@ -1,0 +1,33 @@
+.container {
+    height: auto;
+    width: auto;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    margin-inline-start: 25px;
+}
+
+.input {
+    width: 400px;
+    height: 40px;
+    font-size: 20px;
+    border-radius: 8px;
+    padding-inline-start: 10px;
+    padding-inline-end: 10px;
+    border-style: 'none';
+    /* margin: 15px; */
+}
+
+.eye {
+    background: none;
+    border: none;
+    margin: 0px;
+    padding: 0px;
+    margin-top: 8px;
+}
+
+@media(max-width: 1000px) {
+    .input {
+        width: auto;
+    }
+}

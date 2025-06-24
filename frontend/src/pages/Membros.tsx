@@ -28,10 +28,10 @@ export default function Membros() {
     const [membro, setMembro] = useState<MembroResponse>();
     const [viewInviteBox, setViewInviteBox] = useState<boolean>(false);
     const [emailMembro, setEmailMembro] = useState<string>('');
-    const [convite, setConvite] = useState<ConviteResponse>();
-    const [isVisible, setIsVisible] = useState<boolean>(false);
     const [warnView, setWarnView] = useState<boolean>(false);
+    const [isVisible, setIsVisible] = useState<boolean>(false);
     const [isInvited, setIsInvited] = useState<boolean>(false);
+    const [convite, setConvite] = useState<ConviteResponse>();
 
     const { idEquipe } = useParams();
     const navigate = useNavigate();
@@ -89,6 +89,7 @@ export default function Membros() {
         }
 
         setViewInviteBox(false);
+        setEmailMembro('');
         console.log('Convite enviado!');
     }
 
@@ -153,9 +154,8 @@ export default function Membros() {
         }
     }
 
-    const recusarConvite = () => {
-        setIsVisible(false);
-    }
+    const recusarConvite = () => setIsVisible(false);
+    
 
     useEffect(() => {
         if (idEquipe) {
@@ -197,14 +197,14 @@ export default function Membros() {
             </div>
 
 
-            <InputBox view={viewInviteBox} width='100vh' height='auto'>
-                <div style={{ display: 'flex', flexDirection: 'row', justifyContent: 'space-between', marginRight: 30, marginLeft: 30 }}>
-                    <Text size={30} color='#EBC351' weight='bold'>CONVIDANDO MEMBRO...</Text>
-                    <button style={{ color: 'white', background: 'none', borderStyle: 'none', fontSize: 30, cursor: 'pointer' }} onClick={() => setViewInviteBox(false)}><XIcon></XIcon></button>
+            <InputBox view={viewInviteBox} width='80vmin' height='auto'>
+                <div style={{ display: 'flex', flexDirection: 'row', justifyContent: 'space-between', marginRight: 10, marginLeft: 10 }}>
+                    <Text size={'4.4vmin'} color='#EBC351' weight='bold'>CONVIDANDO MEMBRO...</Text>
+                    <button style={{ color: 'white', background: 'none', borderStyle: 'none', fontSize: '0.5em', cursor: 'pointer' }} onClick={() => setViewInviteBox(false)}><XIcon></XIcon></button>
                 </div>
-                <div style={{ display: 'flex', flexDirection: 'row', justifyContent: 'space-between', marginRight: 30, marginLeft: 30, marginTop: 15 }}>
-                    <Input type='text' width={630} margin='0px 0px 30px 0px' placeholder='Email do membro' value={emailMembro} onChange={(e) => setEmailMembro(e.target.value)}></Input>
-                    <Button width={200} margin='0px 0px 30px 0px' height={45} onClick={enviarConvite}>ENVIAR CONVITE</Button>
+                <div style={{ display: 'flex', flexDirection: 'row', justifyContent: 'space-between', marginRight: 10, marginLeft: 10, marginTop: 15 }}>
+                    <Input type='text' width={'50vmin'} margin='0px 0px 30px 0px' placeholder='Email do membro' value={emailMembro} onChange={(e) => setEmailMembro(e.target.value)}></Input>
+                    <Button width={'23vmin'} margin='0px 0px 30px 0px' height={45} onClick={enviarConvite}>ENVIAR</Button>
                 </div>
             </InputBox>
 

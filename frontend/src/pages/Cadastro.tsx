@@ -8,7 +8,7 @@ import { cadastrar } from '../services/cadastroService';
 import type { UserResponse } from '../types/UserResponse';
 import Warn from '../components/warn/Warn';
 
-export default function Cadastro() {
+export default function Cadastro() { 
     const [username, setUsername] = useState('');
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
@@ -18,9 +18,9 @@ export default function Cadastro() {
     const navigate = useNavigate();
 
     const validar = (): boolean => {
-        const regexEmail = /^[^s@]+@[^s@]+.[^s@]+$/;
+        const regexEmail = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
-        if (username === '' || email === '' || password === '' || confirme === '' || regexEmail.test(email) || password.length < 6) {
+        if (username === '' || email === '' || password === '' || confirme === '' || !regexEmail.test(email) || password.length < 6) {
             setWarnView(true);
             return true;
         }
@@ -41,8 +41,6 @@ export default function Cadastro() {
             return;
         }
 
-        if (password !== confirme) return;
-
         const dados: UserResponse | string = await cadastrar({ username, email, password });
         if (dados) navigate("/");
     };
@@ -57,10 +55,10 @@ export default function Cadastro() {
 
             <div className={styles.right}>
                 <h1>COMECE AQUI E AGORA!</h1>
-                <Input type='text' width={400} margin={15} placeholder='Insira seu nome' value={username} onChange={(e) => setUsername(e.target.value)}></Input>
-                <Input type='email' width={400} margin={15} placeholder='Insira seu email' value={email} onChange={(e) => setEmail(e.target.value)}></Input>
-                <Input type='password' width={400} margin={15} placeholder='Insira sua senha' value={password} onChange={(e) => setPassword(e.target.value)}></Input>
-                <Input type='password' width={400} margin={15} placeholder='Confirme sua senha' value={confirme} onChange={(e) => setConfirme(e.target.value)}></Input>
+                <Input type='text' width={'57vmin'} margin={15} placeholder='Insira seu nome' value={username} onChange={(e) => setUsername(e.target.value)}></Input>
+                <Input type='email' width={'57vmin'} margin={15} placeholder='Insira seu email' value={email} onChange={(e) => setEmail(e.target.value)}></Input>
+                <Input type='password' width={'57vmin'} margin={15} placeholder='Insira sua senha' value={password} onChange={(e) => setPassword(e.target.value)}></Input>
+                <Input type='password' width={'57vmin'} margin={15} placeholder='Confirme sua senha' value={confirme} onChange={(e) => setConfirme(e.target.value)}></Input>
                 <Button width={200} margin={15} height={45} color='#EBC351' mouseDownColor='#AD903E' onClick={handleCadastro}>REGISTRAR</Button>
                 <Link to='/' className={styles.link}>Conecte-se</Link>
             </div>

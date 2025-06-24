@@ -7,7 +7,7 @@ export default function Button({width, height, color='#EBC351', mouseDownColor='
     const style = {
         width: width, 
         height: height, 
-        fontSize: 20, 
+        fontSize: '1.1rem', 
         fontWeight: 'bold', 
         color: colorText, 
         borderRadius: 8, 

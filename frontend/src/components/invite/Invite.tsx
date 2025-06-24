@@ -13,8 +13,8 @@ export default function InputBox({ invite, isVisible = false, onAccept, onRecuse
                         <div className={styles.invite}>
                             <p className={styles.text}>{invite.senderName.toUpperCase()} TE CONVIDOU PARA {invite.squadName.toUpperCase()}</p>
                             <div className={styles.buttons}>
-                                <Button width={150} color='green' onClick={onAccept} height={30} margin={5} mouseDownColor='#035900'>Aceitar</Button>
-                                <Button width={150} color='red' onClick={onRecuse} height={30} margin={5} mouseDownColor='#800006'>Recusar</Button>
+                                <Button width={'20vmin'} color='green' onClick={onAccept} height={30} margin={5} mouseDownColor='#035900'>Aceitar</Button>
+                                <Button width={'20vmin'} color='red' onClick={onRecuse} height={30} margin={5} mouseDownColor='#800006'>Recusar</Button>
                             </div>
                         </div>
                     </div>

@@ -55,8 +55,15 @@ export default function Equipes() {
             }
         }
 
-        if (param === 'equipe') {
+        if (param === 'criando-equipe') {
             if (novaEquipe === '') {
+                setWarnView(true);
+                return true;
+            }
+        }
+
+        if (param === 'editando-equipe') {
+            if (novoNomeEquipe === '') {
                 setWarnView(true);
                 return true;
             }
@@ -104,7 +111,7 @@ export default function Equipes() {
     }
 
     const criarNovaEquipe = async () => {
-        if (validar('equipe')) {
+        if (validar('criando-equipe')) {
             temporizarAviso();
             return;
         }
@@ -133,7 +140,7 @@ export default function Equipes() {
         if (registros) {
             for (let i = 0; i < registros.length; i++) {
                 if (registros[i].identifier == idEquipeEditando && userDetails) {
-                    if (validar('equipe')) {
+                    if (validar('editando-equipe')) {
                         temporizarAviso();
                         return;
                     }

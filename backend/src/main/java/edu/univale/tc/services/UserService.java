@@ -1,6 +1,5 @@
 package edu.univale.tc.services;
 
-import edu.univale.tc.domain.Collaboration;
 import edu.univale.tc.domain.User;
 import edu.univale.tc.dto.request.UserRequestDto;
 import edu.univale.tc.dto.response.UserResponseDto;
@@ -90,11 +89,14 @@ public class UserService {
 
         User user = findUserById(id);
 
-        collaborationRepository.deleteAllById(
-                user.getCollaboration().stream()
-                        .map(Collaboration::getId)
-                        .toList());
-        taskRepository.deleteAll(user.getTasks());
+        user.getOwnedSquads().forEach((s) -> {
+            collaborationRepository.deleteAll(s.getCollaboration());
+        });
+
+        user.getOwnedSquads().forEach(s -> {
+            taskRepository.deleteAll(s.getTasks());
+        });
+
         squadRepository.deleteAll(user.getOwnedSquads());
         userRepository.deleteById(id);
     }

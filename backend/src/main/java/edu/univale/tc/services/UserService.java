@@ -1,5 +1,6 @@
 package edu.univale.tc.services;
 
+import edu.univale.tc.domain.Squad;
 import edu.univale.tc.domain.User;
 import edu.univale.tc.dto.request.UserRequestDto;
 import edu.univale.tc.dto.response.UserResponseDto;
@@ -97,8 +98,8 @@ public class UserService {
             taskRepository.deleteAll(s.getTasks());
         });
 
-        squadRepository.deleteAll(user.getOwnedSquads());
-        userRepository.deleteById(id);
+        squadRepository.deleteAllById(user.getOwnedSquads().stream().map(Squad::getId).toList());
+        userRepository.delete(user);
     }
 
     private boolean verifyEmail(String userEmail) {
